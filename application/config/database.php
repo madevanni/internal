@@ -113,6 +113,33 @@ if (defined('CI_VERSION') && substr(CI_VERSION, 0, 1) != '2') {
         'failover'     => array(),
         'save_queries' => true,
     );
+    
+    /*
+     * Infor ERP LN - MS SQL Server Connection
+     */
+    $db['erplnDB'] = array(
+        'dsn' => 'ERP_Report',
+        'hostname' => '192.168.0.45',
+        'port' => '1433',
+        'username' => 'appl',
+        'password' => 'admin',
+        'database' => 'erplndb',
+        'dbdriver' => 'sqlsrv',
+        'dbprefix' => 'dbo_',
+        'pconnect' => false, // not supported with the database session driver
+        'db_debug' => (ENVIRONMENT != 'production'),
+        'cache_on' => false,
+        'cachedir' => '',
+        'char_set' => 'utf8',
+        'dbcollat' => 'utf8_general_ci',
+        'swap_pre' => '',
+        'encrypt'  => false,
+        'compress' => false,
+        'autoinit' => true,
+        'stricton' => FALSE,
+        'failover' => array(),
+        'save_queries' => TRUE,
+    );
 } else {
     // CodeIgniter 2 configuration
     $active_record = true;
@@ -133,4 +160,25 @@ if (defined('CI_VERSION') && substr(CI_VERSION, 0, 1) != '2') {
     $db['default']['swap_pre'] = '';
     $db['default']['autoinit'] = true;
     $db['default']['stricton'] = true;
+    
+    /*
+     * Infor ERP LN - MS SQL Server Connection
+     */
+    $db['erplnDB']['dsn'] = 'ERP_Report';
+    $db['erplnDB']['hostname'] = '192.168.0.45';
+    $db['erplnDB']['username'] = 'appl';
+    $db['erplnDB']['password'] = 'admin';
+    $db['erplnDB']['database'] = 'erplndb';
+    $db['erplnDB']['port'] = '1433';
+    $db['erplnDB']['dbdriver'] = 'sqlsrv';
+    $db['erplnDB']['dbprefix'] = 'dbo_';
+    $db['erplnDB']['pconnect'] = FALSE;
+    $db['erplnDB']['db_debug'] = true;
+    $db['erplnDB']['cache_on'] = false;
+    $db['erplnDB']['cachedir'] = '';
+    $db['erplnDB']['char_set'] = 'utf8';
+    $db['erplnDB']['dbcollat'] = 'utf8_general_ci';
+    $db['erplnDB']['swap_pre'] = '';
+    $db['erplnDB']['autoinit'] = true;
+    $db['erplnDB']['stricton'] = FALSE;
 }

@@ -1,7 +1,7 @@
 <div class="jumbotron" text-align="center">
-	<h1>Welcome to Bonfire</h1>
+	<h1>Welcome to PT. Sanden Indonesia</h1>
 
-	<p class="lead">Kickstart your CodeIgniter applications and save yourself 100s of hours of development time.<br/>That means you make more money.</p>
+        <p class="lead"><b><i>"Let us develop with wisdom and prosper in harmony"</i></b> means that we should use our intelligence in combining our developmental and pioneering abilities to win prosperity for us all."</p>
 
 	<?php if (isset($current_user->email)) : ?>
 		<a href="<?php echo site_url(SITE_AREA) ?>" class="btn btn-large btn-success">Go to the Admin area</a>
@@ -9,7 +9,7 @@
 		<a href="<?php echo site_url(LOGIN_URL); ?>" class="btn btn-large btn-primary"><?php echo lang('bf_action_login'); ?></a>
 	<?php endif;?>
 
-	<br/><br/><a href="<?php echo site_url('/docs') ?>" class="btn btn-large btn-info">Browse the Docs</a>
+	<!--<br/><br/><a href="<?php echo site_url('/docs') ?>" class="btn btn-large btn-info">Browse the Docs</a>-->
 </div>
 
 <hr />
@@ -17,23 +17,21 @@
 <div class="row-fluid">
 
 	<div class="span6">
-		<h4>A Solid Base</h4>
+		<h4>Our Management Principles</h4>
 
-		<p>Bonfire is based on <a href="http://ellislab.com/codeigniter" target="_blank">CodeIgniter <?php echo CI_VERSION; ?></a>, a proven PHP framework. In order to make the best use of it, you should be comfortable with CodeIgniter and its <a href="http://ellislab.com/codeigniter/user-guide/" target="_blank">documentation</a> first.</p>
-
-		<p>We use Twitter's <a href="">Bootstrap</a> front-end framework and <a href="http://jquery.com/">jQuery</a> as the basis of the CSS and Javascript.</p>
+		<p>Have been the cornerstone of our employee's activities since the company's founding.</p>
 	</div>
 
-	<div class="span6">
+<!--	<div class="span6">
 		<h4>A Growing Community</h4>
 
 		<p>Bonfire has an ever-growing <a href="http://forums.cibonfire.com">community</a> of users that are there to help you get unstuck, or make the best use of this powerful system.</p>
 
 		<p>Bugs and feature discussion also happen on GitHub's <a href="https://github.com/ci-bonfire/Bonfire/issues?direction=desc&labels=0.7&sort=created&state=open">issue tracker</a>. This is the best place to report bugs and discuss new features.</p>
-	</div>
+	</div>-->
 </div>
 
-<div class="row-fluid">
+<!--<div class="row-fluid">
 
 	<div class="span6">
 		<h4>Built-in Flexibility</h4>
@@ -45,4 +43,4 @@
 		<p><i>Role-Based Access Control</i> that provides as much fine-grained control as your modules need.</p>
 	</div>
 
-</div>
+</div>-->
