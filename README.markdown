@@ -25,7 +25,7 @@ Codeigniter based framework for new website, to make improvement, standard and s
 			<IfModule mod_rewrite.c>
 			  RewriteCond %{REQUEST_FILENAME} !-f
 			  RewriteCond %{REQUEST_FILENAME} !-d
-			  RewriteRule ^(.*)$ public/index.php/$1 [L]
+			  RewriteRule ^(.*)$ index.php/$1 [L]
 			</IfModule>
 			
 	Step 3: Rename (for backup purpose) or remove index.php and .htaccess in your subdirectory, ci-bonfire
