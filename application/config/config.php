@@ -29,7 +29,7 @@ $config['base_url']	= '';
 | variable so that it is blank.
 |
  */
-$config['index_page'] = "index.php";
+$config['index_page'] = "";
 
 /*
 |--------------------------------------------------------------------------
@@ -311,7 +311,7 @@ $config['cache_query_string'] = false;
 | http://codeigniter.com/user_guide/libraries/encryption.html
 |
  */
-$config['encryption_key'] = "58f62e7a5c072527eb00fad7ccb6f547";
+$config['encryption_key'] = "f640e2b721e01f223825799f6869facb";
 
 /*
 |--------------------------------------------------------------------------
