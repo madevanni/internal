@@ -15,7 +15,7 @@ Codeigniter based framework for new website, to make improvement, standard and s
 			<IfModule mod_rewrite.c>
 			  Options +FollowSymlinks
 			  RewriteEngine On
-			  RewriteBase /ci-bonfire
+			  RewriteBase /internal
 			  RewriteCond %{REQUEST_URI} ^bonfire/codeigniter.*
 			  RewriteRule ^(.*)$ /index.php?/$1 [L]
 			</IfModule>
