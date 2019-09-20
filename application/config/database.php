@@ -125,7 +125,7 @@ if (defined('CI_VERSION') && substr(CI_VERSION, 0, 1) != '2') {
         'password' => 'admin',
         'database' => 'erplndb',
         'dbdriver' => 'sqlsrv',
-        'dbprefix' => 'dbo_',
+        'dbprefix' => 'dbo.',
         'pconnect' => false, // not supported with the database session driver
         'db_debug' => (ENVIRONMENT != 'production'),
         'cache_on' => false,
