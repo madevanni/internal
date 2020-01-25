@@ -62,7 +62,7 @@ class Content extends Admin_Controller {
      * @return void
      */
     public function items() {
-        Template::set('items');
+        Template::set('items', $this->planning_model->items());
         Template::set('toolbar_title', 'Planning - Items');
 
         Template::render();
@@ -87,11 +87,11 @@ class Content extends Admin_Controller {
         }
         
         // Keys total & rows are mandatory for jEasyUI
-        $result = array(
+        $data = array(
             'total' => $users_data['countItems'],
             'rows' => $rows
         );
-        echo json_encode($result);
+        echo json_encode($data);
     }
 
     /**

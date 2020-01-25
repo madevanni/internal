@@ -62,3 +62,4 @@ vendor/*
 # Ignore any sparks that have been loaded
 sparks/*
 !/application/modules/planning/
+!/application/modules/sales/

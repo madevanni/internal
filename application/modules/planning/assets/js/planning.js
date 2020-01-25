@@ -1,12 +1,12 @@
 $('#dg').edatagrid({
-    url: 'get_users.php',
+    url: '/content/planning/loadItems',
     saveUrl: 'save_user.php',
     updateUrl: 'update_user.php',
     destroyUrl: 'destroy_user.php'
 });
 
 function doSearch() {
-    $('#tt').datagrid('load', {
+    $('#dg').datagrid('load', {
         itemid: $('#itemid').val(),
         productid: $('#itemgroup').val()
     });

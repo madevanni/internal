@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row">
-        <table id="tt" class="easyui-datagrid" style="width:auto;height:400px"
-               url="<?php echo site_url(SITE_AREA .'/content/planning/items') ?>"
+        <table id="dg" class="easyui-datagrid" style="width:auto;height:400px"
+               url="<?php echo site_url(SITE_AREA . '/content/planning/loadItems') ?>"
                title="Item - General" iconCls="icon-search" toolbar="#tb"
                rownumbers="true" pagination="true">
             <thead>
@@ -22,4 +22,6 @@
             <a href="#" class="easyui-linkbutton" plain="true" onclick="doSearch()">Search</a>
         </div>
     </div>
+    
+    <?php print_r($items); ?>
 </div>

@@ -23,6 +23,13 @@ class Planning_model extends MY_Model {
         $this->db = $this->load->database('erplnDB', TRUE);
     }
 
+    /**
+     * Get all Items generals information
+     * @param type $rowno
+     * @param type $rowperpage
+     * @param type $search
+     * @return type
+     */
     public function getItems($rowno, $rowperpage, $search = "") {
         $this->db->select('*');
         $this->db->limit($rowno, $rowperpage);
@@ -37,6 +44,13 @@ class Planning_model extends MY_Model {
         $result['items'] = $query->result();
 
         return $result;
+    }
+    
+    public function items() {
+        $this->db->select('*');
+        $this->db->from($this->table_items);
+        $query = $this->db->get();
+        return $query->result();
     }
 
 }
