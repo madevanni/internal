@@ -21,8 +21,6 @@ class Sales extends Front_Controller
         
         $this->lang->load('sales');
         
-        
-
         Assets::add_module_js('sales', 'sales.js');
     }
 
@@ -34,11 +32,6 @@ class Sales extends Front_Controller
     public function index()
     {
         
-        
-        
-        
-        
-
         Template::render();
     }
     

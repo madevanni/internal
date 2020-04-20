@@ -2,39 +2,43 @@
 
 defined('BASEPATH') || exit('No direct script access allowed');
 
-class Sales_model extends MY_Model {
+use GuzzleHttp\Client;
+
+class Sales_model extends MY_Model
+{
     /*
      * Infor ERP LN Software Architecture
      * http://www.baanboard.com/node/42
      * tc	Common	master data
      */
 
-    var $API = "";
+    private $_client;
 
-    function __construct() {
+    function __construct()
+    {
         parent::__construct();
-        $this->API = "http://localhost/api/sales";
+        $this->_client = new Client([
+            'base_uri' => 'http://localhost/api/',
+            'auth' => ['admin', '1234'],
+            'query' => ['X-API-KEY' => '1234']
+        ]);
     }
 
-    function list_partners($id, $limit, $offset) {
-        return $this->curl->simple_get($this->API.'/partners', array('id' => $id, 'limit' => $limit, 'offset' => $offset));
+    public function getPartners() {
+        $response = $this->_client->request('GET', 'sales/partners', [
+            'query' => [
+                'X-API-KEY' => '1234'
+            ]
+        ]);
+
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $result;
     }
+    
+    public function getModels() {
+        $response = $this->_client->request('GET', 'sales/models');
 
-    function partner($id) {
-        $params = array('id' => $id);
-        return json_decode($this->restclient->get($params), true);
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $result;
     }
-
-//    function save($array) {
-//        $this->restclient->post($array);
-//    }
-//
-//    function update($array) {
-//        $this->restclient->put($array);
-//    }
-//
-//    function delete($id) {
-//        $this->restclient->delete($id);
-//    }
-
 }

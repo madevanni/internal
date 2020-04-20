@@ -17,7 +17,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | environments.
 |
  */
-$config['base_url']	= 'http://localhost/internal';
+$root = "http://".$_SERVER['HTTP_HOST'];
+$root .= dirname($_SERVER['SCRIPT_NAME']);
+$config['base_url'] = $root;
 
 /*
 |--------------------------------------------------------------------------

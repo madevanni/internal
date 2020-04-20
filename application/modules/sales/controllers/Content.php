@@ -1,8 +1,8 @@
 <?php
 
-use \GuzzleHttp\Client;
-
 defined('BASEPATH') || exit('No direct script access allowed');
+
+use GuzzleHttp\Client;
 
 /**
  * Content controller
@@ -15,24 +15,25 @@ class Content extends Admin_Controller
     protected $permissionEdit = 'Sales.Content.Edit';
     protected $permissionView = 'Sales.Content.View';
 
-    private $_client;
-
     /**
      * Constructor
      *
      * @return void
      */
+
+    private $_client;
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->_client = new \GuzzleHttp\Client([
-            'base_uri' => 'http://localhost/api/', [
-                'auth' => ['admin', '1234']
-            ]
-        ]);
-
         $this->load->model('sales/sales_model');
+
+        $this->_client = new Client([
+            'base_uri' => 'http://localhost/api/',
+            'auth' => ['admin', '1234'],
+            'query' => ['X-API-KEY' => '1234']
+        ]);
 
         $this->auth->restrict($this->permissionView);
         $this->lang->load('sales');
@@ -42,12 +43,14 @@ class Content extends Admin_Controller
         Template::set_block('sub_nav', 'content/_sub_nav');
 
         Assets::add_js(array(
+            'jquery.min.js',
             'easyui/jquery.easyui.min.js',
             'easyui/extension/jquery.edatagrid.js'
         ));
         Assets::add_module_js('sales', 'sales.js');
         Assets::add_css(array(
             'easyui/themes/default/easyui.css',
+            'asyui/themes/color.css',
             'easyui/themes/icon.css'
         ));
         Assets::add_module_css('sales', 'sales.css');
@@ -62,7 +65,6 @@ class Content extends Admin_Controller
     {
 
         Template::set('toolbar_title', lang('sales_manage'));
-
         Template::render();
     }
 
@@ -95,9 +97,6 @@ class Content extends Admin_Controller
             redirect(SITE_AREA . '/content/sales');
         }
 
-
-
-
         Template::set('toolbar_title', lang('sales_edit_heading'));
         Template::render();
     }
@@ -110,28 +109,33 @@ class Content extends Admin_Controller
     public function partners()
     {
         Template::set('toolbar_title', 'Business Partners');
-        $data = $this->_client->request(
-            'GET',
-            'sales/partners',
-            [
-                'auth' => ['admin', '1234'],
-                'query' => ['X-API-KEY' => '1234']
-            ]
-        );
-        Template::set('data', $data);
         Template::render();
     }
 
-    public function getPartners($id, $limit, $offset)
+    public function getPartners()
     {
-        $this->output->set_content_type('application/json');
-        $result = $this->Sales_model->list_partners($id, $limit, $offset);
-        echo json_encode($result); //return data json
+        $response = $this->_client->request('GET', 'sales/partners', [
+            'query' => [
+                'X-API-KEY' => '1234'
+            ]
+        ]);
+
+        $result = json_encode($response->getBody()->getContents(), true);
+        return $result;
     }
 
-    public function orders()
+    public function projects()
     {
-        template::render();
+        Template::set('projects');
+        Template::set('toolbar_title', 'Sales - Projects');
+        Template::render();
+    }
+
+    public function getModels()
+    {
+        $this->output->set_content_type('application/json');
+        $models = $this->sales_model->getModels();
+        echo json_encode($models['data']);
     }
 
     public function get_salesOrders()
@@ -167,4 +171,5 @@ class Content extends Admin_Controller
 
         Template::render();
     }
+
 }

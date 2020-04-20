@@ -1,13 +1,15 @@
-<table class="easyui-datagrid" title="Basic DataGrid"
-       data-options="singleSelect:true,collapsible:true,url:'datagrid_data1.json',method:'get'">
+<table class="easyui-datagrid" title="Sales - Projects" style="height: 500px" toolbar="#toolbar" pagination="true" rownumber="true" singleSelect="true" fitColumns="true" url=<?php echo site_url(SITE_AREA.'/content/sales/getModels')?>>
     <thead>
         <tr>
-            <th data-options="field:'itemid',width:80"> ID</th>
-            <th data-options="field:'productid',width:100">Product</th>
-            <th data-options="field:'listprice',width:80">List Price</th>
-            <th data-options="field:'unitcost',width:80">Unit Cost</th>
-            <th data-options="field:'attr1',width:250">Attribute</th>
-            <th data-options="field:'status',width:60">Status</th>
+            <th align="center" field="id" hidden>ID</th>
+            <th align="center" field="model">Model</th>
+            <th align="center" field="created_by">Created by</th>
+            <th align="center" field="modified_on">Modified on</th>
         </tr>
     </thead>
 </table>
+<div id="toolbar">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newModel()">New Model</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editModel()">Edit Model</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyModel()">Remove Model</a>
+</div>

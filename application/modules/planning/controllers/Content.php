@@ -2,6 +2,9 @@
 
 defined('BASEPATH') || exit('No direct script access allowed');
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Uri;
+
 /**
  * Content controller
  */
@@ -12,6 +15,8 @@ class Content extends Admin_Controller {
     protected $permissionEdit = 'Planning.Content.Edit';
     protected $permissionView = 'Planning.Content.View';
 
+    private $_client;
+
     /**
      * Constructor
      *
@@ -19,6 +24,12 @@ class Content extends Admin_Controller {
      */
     public function __construct() {
         parent::__construct();
+
+        $this->_client = new Client([
+            'base_uri' => 'http://localhost/api/',
+            'auth' => ['admin', '1234'],
+            'query' => ['X-API-KEY' => '1234']
+        ]);
 
         $this->load->model('planning/planning_model');
 
@@ -52,7 +63,6 @@ class Content extends Admin_Controller {
 
         Template::set('forecast');
         Template::set('toolbar_title', 'Planning - Forecast');
-
         Template::render();
     }
 
@@ -62,48 +72,21 @@ class Content extends Admin_Controller {
      * @return void
      */
     public function items() {
-        Template::set('items', $this->planning_model->items());
+        Template::set('items', $this->planning_model->getItems());
         Template::set('toolbar_title', 'Planning - Items');
-
+        $response = $this->_client->request('GET', 'items/details', [
+            'on_stats' => function (TransferStats $stats) use (&$url) {
+                $url = $stats->getEffectiveUri();
+            }
+        ])->getBody()->getContents();
+        Template::set('url', $url);
         Template::render();
     }
-
-    public function loadItems() {
-        $rowno = isset($_POST['page']) ? intval($_POST['page']) : 1;
-        $rowperpage = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
-        $search = isset($_POST['search']) ? $_POST['search'] : '';
-        $rowno = ($rowno-1) * $rowperpage;
-        $users_data = $this->planning_model->getItems($rowno, $rowperpage, $search);
-        $i = 0;
-        $rows = array();
-        foreach ($users_data['items'] as $row) {
-            $rows[$i]['itemid'] = $row->t_item;
-            $rows[$i]['itemdesc'] = $row->t_dsca;
-            $rows[$i]['itemtype'] = $row->t_kitm;
-            $rows[$i]['itemgroup'] = $row->t_citg;
-            $rows[$i]['itemunit'] = $row->t_cuni;
-            
-            $i++;
-        }
-        
-        // Keys total & rows are mandatory for jEasyUI
-        $data = array(
-            'total' => $users_data['countItems'],
-            'rows' => $rows
-        );
-        echo json_encode($data);
-    }
-
-    /**
-     * Display a list of Items data.
-     * 
-     * @return void
-     */
-    public function bom() {
-        Template::set('bom');
-        Template::set('toolbar_title', 'Planning - Bill of Materials');
-
-        Template::render();
+    
+    public function getItems()
+    {
+        $result = $this->planning_model->getItems();
+        return json_encode($result);
     }
 
     /**
@@ -113,7 +96,6 @@ class Content extends Admin_Controller {
      */
     public function create() {
         $this->auth->restrict($this->permissionCreate);
-
 
         Template::set('toolbar_title', lang('planning_action_create'));
 
@@ -132,9 +114,6 @@ class Content extends Admin_Controller {
 
             redirect(SITE_AREA . '/content/planning');
         }
-
-
-
 
         Template::set('toolbar_title', lang('planning_edit_heading'));
         Template::render();

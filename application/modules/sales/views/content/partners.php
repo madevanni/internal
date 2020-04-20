@@ -1,66 +1,37 @@
-<div class="row">
-    <!--Datagrid partners-->
-    <table id="dgCustomers" toolbar="#toolbarCustomer" class="easyui-datagrid" fit="true" singleSelect="true" fitColumns="true" 
-           rowNumbers="false" pagination="true" url="<?= site_url('admin/content/sales/getPartners') ?>" 
-           pageSize="50" pageList="[25,50,75,100,125,150,200]" nowrap="false">
-        <thead>
-            <tr>
-                <th field="t_bpid" width="80">Customer Number</th>
-                <th field="t_nama" width="100">Customer Name</th>
-                <th field="t_clan" width="100">Language</th>
-                <th field="t_ccur" width="100">Currency</th>
-            </tr>
-        </thead>
-    </table>
-    <div id="toolbarCustomer">
-        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onClick="newCustomer()">New</a>
-        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onClick="editCustomer()">Edit</a>
-        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onClick="destroyCustomer()">Destroy</a>
-        <input  id="searchCustomer" class="easyui-searchbox" data-options="prompt:'Please Input Value',searcher:doSearchCustomer,
-                inputEvents: $.extend({}, $.fn.searchbox.defaults.inputEvents, {
-                keyup: function(e){
-                var t = $(e.data.target);
-                var opts = t.searchbox('options');
-                t.searchbox('setValue', $(this).val());
-                opts.searcher.call(t[0],t.searchbox('getValue'),t.searchbox('getName'));
-                }
-                })" style="width:50%;"></input>
-    </div>
-    <?php var_dump($data); ?>
-    <!--end of Datagrid partners-->
-    <div id="dlgCustomer" class="easyui-dialog" style="width: 780px; height: auto; padding: 10px;" modal="true" closed="true" buttons="#dlgCustomerBtn">
-        <form id="fmCustomer" method="post">
-            <div class="col-sm-12 justify-content-sm-center">
-                <div class="row" style="width: 100%">
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label for="">Customer Number</label>
-                            <input type="text" name="t_bpid" class="easyui-textbox" style="width: 100%;">
-                        </div>
-                    </div>
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label for="">Customer Name</label>
-                            <input type="text" name="t_nama" class="easyui-textbox" style="width: 100%;"></div>
-                    </div>
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label for="">Language</label>
-                            <input type="text" name="t_clan" class="easyui-textbox" style="width: 100%;"></div>
-                    </div>
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label for="">Currency</label>
-                            <input type="text" name="t_ccur" class="easyui-textbox" style="width: 100%;"></div>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-    <div id="dlgCustomerBtn">
-        <a href="javascript:void(0)" id="btn_save" class="easyui-linkbutton" iconCls="icon-ok-a" onclick="saveCustomer()" style="width:90px">Save</a>
-        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-del-a" onclick="javascript:$('#dlgCustomer').dialog('close');
-                $('#fmEmployee').form(clear)
-           " style="width:90px">Cancel</a>
-    </div>
-</div>
+<!-- <table class="easyui-datagrid" title="Business partners information" style="height: 500px" toolbar="#toolbar" data-options="pagination:true,rownumbers:true,singleSelect:true,url:'http://localhost/api/sales/partners?X-API-KEY=1234',method:'get',fitColumns:true">
+    <thead>
+        <tr>
+            <th align="center" data-options="field:'id'" hidden>ID</th>
+            <th align="left" data-options="field:'partners'" sortable="true">Business partners</th>
+            <th align="left" data-options="field:'address'">Address</th>
+            <th align="center" data-options="field:'zipcode'">Zipcode</th>
+            <th align="center" data-options="field:'city'">City</th>
+            <th align="center" data-options="field:'telephone'">Telephone</th>
+            <th align="center" data-options="field:'country'">Country</th>
+            <th align="center" data-options="field:'currency'">Currency</th>
+            <th align="center" data-options="field:'role'">Role</th>
+            <th align="center" data-options="field:'status'">Status</th>
+        </tr>
+    </thead>
+</table>
+<div id="toolbar">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newPartner()">New Partner</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editPartner()">Edit Partner</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyPartner()">Remove Partner</a>
+</div> -->
+<table id="dg" title="Business Partners" class="easyui-datagrid" style="width:100%;height:250px" url="<?php echo site_url('/admin/content/sales/getPartners'); ?>" pagination="true" rownumbers="true" fitColumns="true" singleSelect="true">
+    <thead>
+        <tr>
+            <th field="id" width="50" hidden>ID</th>
+            <th field="partners" width="50">Partners</th>
+            <th field="address" width="50">Address</th>
+            <th field="zipcode" width="50">Zipcode</th>
+            <th field="city" width="50">City</th>
+            <th field="telephone" width="50">Telephone</th>
+            <th field="country" width="50">Country</th>
+            <th field="currency" width="50">Currency</th>
+            <th field="role" width="50">Role</th>
+            <th field="status" width="50">Status</th>
+        </tr>
+    </thead>
+</table>

@@ -2,55 +2,32 @@
 
 defined('BASEPATH') || exit('No direct script access allowed');
 
-class Planning_model extends MY_Model {
+use GuzzleHttp\Client;
 
-    /**
-     * Infor ERP LN Software Architecture
-     * http://www.baanboard.com/node/42
-     * td	Distribution	purchase/sales/inventory control
-     * 
-     * Business functions are grouped in modules with a three-character code. For instance, the package Distribution (td) consists of the modules:
-     * Distribution:Purchase	td pur
-     * Distribution:Sales	td sls
-     * Distribution:Inventory	td inv
-     */
-    protected $table_items = 'ttcibd001110';
-    protected $meta_table_items = 'Item general meta';
-    protected $key_table_pr = 't_item';
+class Planning_model extends MY_Model
+{
 
-    function __construct() {
+    private $_client;
+
+    function __construct()
+    {
         parent::__construct();
-        $this->db = $this->load->database('erplnDB', TRUE);
+        $this->_client = new Client([
+            'base_uri' => 'http://localhost/api/',
+            'auth' => ['admin', '1234'],
+            'query' => ['X-API-KEY' => '1234']
+        ]);
     }
 
-    /**
-     * Get all Items generals information
-     * @param type $rowno
-     * @param type $rowperpage
-     * @param type $search
-     * @return type
-     */
-    public function getItems($rowno, $rowperpage, $search = "") {
-        $this->db->select('*');
-        $this->db->limit($rowno, $rowperpage);
-        $this->db->from($this->table_items);
+    public function getItems()
+    {
+        $response = $this->_client->request('GET', 'items/details', [
+            'query' => [
+                'X-API-KEY' => '1234'
+            ]
+        ]);
 
-        if ($search != '') {
-            $this->db->where($search);
-        }
-
-        $query = $this->db->get();
-        $result['countItems'] = $query->num_rows();
-        $result['items'] = $query->result();
-
+        $result = json_decode($response->getBody()->getContents(), true);
         return $result;
     }
-    
-    public function items() {
-        $this->db->select('*');
-        $this->db->from($this->table_items);
-        $query = $this->db->get();
-        return $query->result();
-    }
-
 }
