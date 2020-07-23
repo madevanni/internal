@@ -21,19 +21,13 @@ class Content extends Admin_Controller
      * @return void
      */
 
-    private $_client;
-
     public function __construct()
     {
         parent::__construct();
 
-        $this->load->model('sales/sales_model');
+        $this->load->helper('form');
 
-        $this->_client = new Client([
-            'base_uri' => 'http://localhost/api/',
-            'auth' => ['admin', '1234'],
-            'query' => ['X-API-KEY' => '1234']
-        ]);
+        $this->load->model('sales/sales_model');
 
         $this->auth->restrict($this->permissionView);
         $this->lang->load('sales');
@@ -43,9 +37,8 @@ class Content extends Admin_Controller
         Template::set_block('sub_nav', 'content/_sub_nav');
 
         Assets::add_js(array(
-            'jquery.min.js',
             'easyui/jquery.easyui.min.js',
-            'easyui/extension/jquery.edatagrid.js'
+            'easyui/extension/jquery.edatagrid.js',
         ));
         Assets::add_module_js('sales', 'sales.js');
         Assets::add_css(array(
@@ -63,7 +56,6 @@ class Content extends Admin_Controller
      */
     public function index()
     {
-
         Template::set('toolbar_title', lang('sales_manage'));
         Template::render();
     }
@@ -114,62 +106,91 @@ class Content extends Admin_Controller
 
     public function getPartners()
     {
-        $response = $this->_client->request('GET', 'sales/partners', [
-            'query' => [
-                'X-API-KEY' => '1234'
-            ]
-        ]);
+        // $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+        // $rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
+        // $offset = ($page - 1) * $rows;
 
-        $result = json_encode($response->getBody()->getContents(), true);
-        return $result;
+        // $response = $this->_client->request('GET', 'sales/partners', [
+        //     'query' => [
+        //         'X-API-KEY' => '1234',
+        //         'rows' => $rows,
+        //         'offset' => $offset
+        //     ]
+        // ]);
+
+        // $result = json_decode($response->getBody()->getContents(), true);
+        // $this->output->set_content_type('application/json');
+        // echo json_encode($result, true);
+        // $this->output->enable_profiler(false);
     }
 
-    public function projects()
+    public function models()
     {
-        Template::set('projects');
-        Template::set('toolbar_title', 'Sales - Projects');
+        Template::set('models');
+        Template::set('toolbar_title', 'Sales - Models');
         Template::render();
     }
 
-    public function getModels()
+    public function get_models()
     {
-        $this->output->set_content_type('application/json');
         $models = $this->sales_model->getModels();
-        echo json_encode($models['data']);
+        $this->output->set_content_type('application/json');
+        echo json_encode($models, true);
+        $this->output->enable_profiler(false);
+    }
+
+    public function save_model()
+    {
+        if (isset($_GET['name'])) {
+            $this->sales_model->saveModel();
+        } else {
+            echo 'Name is empty';
+        }
+    }
+
+    public function update_model()
+    {
+        $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '46';
+        $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : 'empty 46';
+        $this->sales_model->updateModel();
+        echo 'id: '.$id.' Name: '.$name;
+    }
+
+    public function destroy_model()
+    {
+        
     }
 
     public function get_salesOrders()
     {
         /* Default request pager params from jeasyUI */
-        $offset = isset($_POST['page']) ? intval($_POST['page']) : 1;
-        $limit = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
-        $search = isset($_POST['search']) ? $_POST['search'] : '';
-        $offset = ($offset - 1) * $limit;
-        $orders = $this->sales_model->get_orders($offset, $limit, $search);
-        $i = 0;
-        $rows = array();
-        foreach ($orders['data'] as $value) {
-            //array of keys = attribute 'field' in view
-            $rows[$i]['orno'] = $value->t_orno;
-            $rows[$i]['order'] = $value->t_corn;
-            $rows[$i]['amount'] = $value->t_oamt;
-            $rows[$i]['status'] = $value->t_hdst;
-            $rows[$i]['date'] = $value->t_odat;
-            $rows[$i]['delivery'] = $value->t_ddat;
-            $rows[$i]['type'] = $value->t_sotp;
+        // $offset = isset($_POST['page']) ? intval($_POST['page']) : 1;
+        // $limit = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
+        // $search = isset($_POST['search']) ? $_POST['search'] : '';
+        // $offset = ($offset - 1) * $limit;
+        // $orders = $this->sales_model->get_orders($offset, $limit, $search);
+        // $i = 0;
+        // $rows = array();
+        // foreach ($orders['data'] as $value) {
+        //     //array of keys = attribute 'field' in view
+        //     $rows[$i]['orno'] = $value->t_orno;
+        //     $rows[$i]['order'] = $value->t_corn;
+        //     $rows[$i]['amount'] = $value->t_oamt;
+        //     $rows[$i]['status'] = $value->t_hdst;
+        //     $rows[$i]['date'] = $value->t_odat;
+        //     $rows[$i]['delivery'] = $value->t_ddat;
+        //     $rows[$i]['type'] = $value->t_sotp;
 
-            $i++;
-        }
-        $result = array('total' => $orders['countOrders'], 'rows' => $rows);
-        echo json_encode($result); //return data json
+        //     $i++;
+        // }
+        // $result = array('total' => $orders['countOrders'], 'rows' => $rows);
+        // echo json_encode($result); //return data json
     }
 
     public function forecast()
     {
         Template::set('forecast');
         Template::set('toolbar_title', 'Sales - Forecast');
-
         Template::render();
     }
-
 }

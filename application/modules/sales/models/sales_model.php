@@ -19,12 +19,12 @@ class Sales_model extends MY_Model
         parent::__construct();
         $this->_client = new Client([
             'base_uri' => 'http://localhost/api/',
-            'auth' => ['admin', '1234'],
-            'query' => ['X-API-KEY' => '1234']
+            'auth' => ['admin', '1234']
         ]);
     }
 
-    public function getPartners() {
+    public function getPartners()
+    {
         $response = $this->_client->request('GET', 'sales/partners', [
             'query' => [
                 'X-API-KEY' => '1234'
@@ -34,11 +34,88 @@ class Sales_model extends MY_Model
         $result = json_decode($response->getBody()->getContents(), true);
         return $result;
     }
-    
-    public function getModels() {
-        $response = $this->_client->request('GET', 'sales/models');
+
+    public function getModels()
+    {
+        if (isset($_GET['page'], $_GET['rows'])) {
+            $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+            $limit = isset($_GET['rows']) ? intval($_GET['rows']) : 10;
+        }
+
+        $response = $this->_client->request('GET', 'sales/models', [
+            'query' => [
+                'X-API-KEY' => '1234',
+                'page' => $page,
+                'limit' => $limit
+            ]
+        ]);
 
         $result = json_decode($response->getBody()->getContents(), true);
+        return $result;
+    }
+
+    public function saveModel()
+    {
+        try {
+            $user = $_POST['name'];
+        } catch (\Exception $e) {
+            die($e->getMessage());
+        }
+        $data = [
+            'model' => $_POST['name'],
+            'created_by' => $this->auth->user_id(),
+            'X-API-KEY' => '1234'
+        ];
+
+        $response = $this->_client->request('POST', 'sales/models', [
+            'form_params' => $data
+        ]);
+
+        $result = json_decode($response->getBody()->getContents(), true);
+
+        return $result;
+    }
+
+    public function updateModel()
+    {
+        if (isset($_REQUEST['id'], $_REQUEST['name'])) {
+            $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : 46;
+            $name = isset($_REQUEST['id']) ? $_REQUEST['id'] : 'empty';
+        }
+
+        $data = [
+            'id' => $id,
+            'name' => $name,
+            'modified_by' => $this->auth->user_id(),
+            'X-API-KEY' => '1234'
+        ];
+
+        $response = $this->_client->request('PUT', 'sales/models', [
+            'form_params' => $data
+        ]);
+
+        $result = json_decode($response->getBody()->getContents(), true);
+
+        return $result;
+    }
+
+    public function deleteModel()
+    {
+        if (isset($_REQUEST['id'])) {
+            $id = intval($_REQUEST['id']);
+        } else {
+            $id = 31;
+        }
+
+        $response = $this->_client->request('DELETE', 'sales/models', [
+            'form_params' => [
+                'X-API-KEY' => '1234',
+                'id' => $id
+            ]
+        ]);
+
+        $result = json_decode($response->getBody()->getContents(), true);
+
         return $result;
     }
 }
