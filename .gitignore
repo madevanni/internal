@@ -63,3 +63,4 @@ vendor/*
 sparks/*
 !/application/modules/planning/
 !/application/modules/sales/
+application/modules/sales/controllers/Content.php

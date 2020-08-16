@@ -9,6 +9,11 @@
     background: url(../easyui/themes/icons/edit_add.png) no-repeat center center;
 }
 
+#toolbar .icon-edit {
+    margin-top: -8px;
+    background: url(../easyui/themes/icons/pencil.png) no-repeat center center;
+}
+
 #toolbar .icon-remove {
     margin-top: -8px;
     background: url(../easyui/themes/icons/edit_remove.png) no-repeat center center;

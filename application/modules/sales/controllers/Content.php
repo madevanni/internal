@@ -27,70 +27,26 @@ class Content extends Admin_Controller
 
         $this->load->helper('form');
 
-        $this->load->model('sales/sales_model');
+        $this->load->model(array('sales/sales_model', 'sales/models_model', 'sales/forecast_model'));
+        $this->lang->load('models');
 
         $this->auth->restrict($this->permissionView);
-        $this->lang->load('sales');
+        $this->lang->load(array('sales', 'models', 'forecast'));
 
         $this->form_validation->set_error_delimiters("<span class='error'>", "</span>");
 
         Template::set_block('sub_nav', 'content/_sub_nav');
 
         Assets::add_js(array(
-            'easyui/jquery.easyui.min.js',
-            'easyui/extension/jquery.edatagrid.js',
+            'easyui/jquery.easyui.min.js'
         ));
         Assets::add_module_js('sales', 'sales.js');
         Assets::add_css(array(
             'easyui/themes/default/easyui.css',
-            'asyui/themes/color.css',
-            'easyui/themes/icon.css'
+            'easyui/themes/icon.css',
+            'easyui/themes/color.css'
         ));
         Assets::add_module_css('sales', 'sales.css');
-    }
-
-    /**
-     * Display a list of Sales data.
-     *
-     * @return void
-     */
-    public function index()
-    {
-        Template::set('toolbar_title', lang('sales_manage'));
-        Template::render();
-    }
-
-    /**
-     * Create a Sales object.
-     *
-     * @return void
-     */
-    public function create()
-    {
-        $this->auth->restrict($this->permissionCreate);
-
-
-        Template::set('toolbar_title', lang('sales_action_create'));
-
-        Template::render();
-    }
-
-    /**
-     * Allows editing of Sales data.
-     *
-     * @return void
-     */
-    public function edit()
-    {
-        $id = $this->uri->segment(5);
-        if (empty($id)) {
-            Template::set_message(lang('sales_invalid_id'), 'error');
-
-            redirect(SITE_AREA . '/content/sales');
-        }
-
-        Template::set('toolbar_title', lang('sales_edit_heading'));
-        Template::render();
     }
 
     /**
@@ -124,73 +80,307 @@ class Content extends Admin_Controller
         // $this->output->enable_profiler(false);
     }
 
-    public function models()
+    public function models($offset = 0)
     {
-        Template::set('models');
-        Template::set('toolbar_title', 'Sales - Models');
+        // Deleting anything?
+        if (isset($_POST['delete'])) {
+            $this->auth->restrict($this->permissionDelete);
+            $checked = $this->input->post('checked');
+            if (is_array($checked) && count($checked)) {
+
+                // If any of the deletions fail, set the result to false, so
+                // failure message is set if any of the attempts fail, not just
+                // the last attempt
+
+                $result = true;
+                foreach ($checked as $pid) {
+                    $deleted = $this->models_model->delete($pid);
+                    if ($deleted == false) {
+                        $result = false;
+                    }
+                }
+                if ($result) {
+                    Template::set_message(count($checked) . ' ' . lang('models_delete_success'), 'success');
+                } else {
+                    Template::set_message(lang('models_delete_failure') . $this->models_model->error, 'error');
+                }
+            }
+        }
+        $pagerUriSegment = 5;
+        $pagerBaseUrl = site_url(SITE_AREA . '/content/sales/models') . '/';
+
+        $limit  = $this->settings_lib->item('site.list_limit') ?: 15;
+
+        $this->load->library('pagination');
+        $pager['base_url']    = $pagerBaseUrl;
+        $pager['total_rows']  = $this->models_model->count_all();
+        $pager['per_page']    = $limit;
+        $pager['uri_segment'] = $pagerUriSegment;
+
+        $this->pagination->initialize($pager);
+        $this->models_model->limit($limit, $offset);
+
+        $records = $this->models_model->find_all();
+
+        Template::set('records', $records);
+
+        Template::set_block('sub_nav', 'content/_sub_nav_model');
+
+        Template::set('toolbar_title', lang('models_manage'));
+
         Template::render();
     }
 
-    public function get_models()
+    public function create_model()
     {
-        $models = $this->sales_model->getModels();
-        $this->output->set_content_type('application/json');
-        echo json_encode($models, true);
-        $this->output->enable_profiler(false);
-    }
+        $this->auth->restrict($this->permissionCreate);
 
-    public function save_model()
-    {
-        if (isset($_GET['name'])) {
-            $this->sales_model->saveModel();
-        } else {
-            echo 'Name is empty';
+        if (isset($_POST['save'])) {
+            if ($insert_id = $this->save_models()) {
+                log_activity($this->auth->user_id(), lang('models_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'models');
+                Template::set_message(lang('models_create_success'), 'success');
+
+                redirect(SITE_AREA . '/content/models');
+            }
+
+            // Not validation error
+            if (!empty($this->models_model->error)) {
+                Template::set_message(lang('models_create_failure') . $this->models_model->error, 'error');
+            }
         }
+
+        Template::set('toolbar_title', lang('models_action_create'));
+
+        Template::set_block('sub_nav', 'content/_sub_nav_model');
+
+        Template::render();
     }
 
-    public function update_model()
+    public function edit_model()
     {
-        $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '46';
-        $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : 'empty 46';
-        $this->sales_model->updateModel();
-        echo 'id: '.$id.' Name: '.$name;
+        $id = $this->uri->segment(5);
+        if (empty($id)) {
+            Template::set_message(lang('models_invalid_id'), 'error');
+
+            redirect(SITE_AREA . '/content/sales');
+        }
+
+        if (isset($_POST['save'])) {
+            $this->auth->restrict($this->permissionEdit);
+
+            if ($this->save_models('update', $id)) {
+                log_activity($this->auth->user_id(), lang('models_act_edit_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'models');
+                Template::set_message(lang('models_edit_success'), 'success');
+                redirect(SITE_AREA . '/content/sales/models');
+            }
+
+            // Not validation error
+            if (!empty($this->models_model->error)) {
+                Template::set_message(lang('models_edit_failure') . $this->models_model->error, 'error');
+            }
+        } elseif (isset($_POST['delete'])) {
+            $this->auth->restrict($this->permissionDelete);
+
+            if ($this->models_model->delete($id)) {
+                log_activity($this->auth->user_id(), lang('models_act_delete_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'models');
+                Template::set_message(lang('models_delete_success'), 'success');
+
+                redirect(SITE_AREA . '/content/sales/models');
+            }
+
+            Template::set_message(lang('models_delete_failure') . $this->models_model->error, 'error');
+        }
+
+        Template::set('models', $this->models_model->find($id));
+
+        Template::set_block('sub_nav', 'content/_sub_nav_model');
+
+        Template::set('toolbar_title', lang('models_edit_heading'));
+        Template::render();
     }
 
-    public function destroy_model()
+    private function save_models($type = 'insert', $id = 0)
     {
-        
+        if ($type == 'update') {
+            $_POST['id'] = $id;
+        }
+
+        // Validate the data
+        $this->form_validation->set_rules($this->models_model->get_validation_rules());
+        if ($this->form_validation->run() === false) {
+            return false;
+        }
+
+        // Make sure we only pass in the fields we want
+
+        $data = $this->models_model->prep_data($this->input->post());
+
+        // Additional handling for default values should be added below,
+        // or in the model's prep_data() method
+
+
+        $return = false;
+        if ($type == 'insert') {
+            $id = $this->models_model->insert($data);
+
+            if (is_numeric($id)) {
+                $return = $id;
+            }
+        } elseif ($type == 'update') {
+            $return = $this->models_model->update($id, $data);
+        }
+
+        return $return;
     }
 
-    public function get_salesOrders()
+    public function forecast($offset = 0)
     {
-        /* Default request pager params from jeasyUI */
-        // $offset = isset($_POST['page']) ? intval($_POST['page']) : 1;
-        // $limit = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
-        // $search = isset($_POST['search']) ? $_POST['search'] : '';
-        // $offset = ($offset - 1) * $limit;
-        // $orders = $this->sales_model->get_orders($offset, $limit, $search);
-        // $i = 0;
-        // $rows = array();
-        // foreach ($orders['data'] as $value) {
-        //     //array of keys = attribute 'field' in view
-        //     $rows[$i]['orno'] = $value->t_orno;
-        //     $rows[$i]['order'] = $value->t_corn;
-        //     $rows[$i]['amount'] = $value->t_oamt;
-        //     $rows[$i]['status'] = $value->t_hdst;
-        //     $rows[$i]['date'] = $value->t_odat;
-        //     $rows[$i]['delivery'] = $value->t_ddat;
-        //     $rows[$i]['type'] = $value->t_sotp;
+        // Deleting anything?
+        if (isset($_POST['delete'])) {
+            $this->auth->restrict($this->permissionDelete);
+            $checked = $this->input->post('checked');
+            if (is_array($checked) && count($checked)) {
 
-        //     $i++;
-        // }
-        // $result = array('total' => $orders['countOrders'], 'rows' => $rows);
-        // echo json_encode($result); //return data json
+                // If any of the deletions fail, set the result to false, so
+                // failure message is set if any of the attempts fail, not just
+                // the last attempt
+
+                $result = true;
+                foreach ($checked as $pid) {
+                    $deleted = $this->forecast_model->delete($pid);
+                    if ($deleted == false) {
+                        $result = false;
+                    }
+                }
+                if ($result) {
+                    Template::set_message(count($checked) . ' ' . lang('forecast_delete_success'), 'success');
+                } else {
+                    Template::set_message(lang('forecast_delete_failure') . $this->forecast_model->error, 'error');
+                }
+            }
+        }
+        $pagerUriSegment = 5;
+        $pagerBaseUrl = site_url(SITE_AREA . '/content/sales/forecast') . '/';
+
+        $limit  = $this->settings_lib->item('site.list_limit') ?: 15;
+
+        $this->load->library('pagination');
+        $pager['base_url']    = $pagerBaseUrl;
+        $pager['total_rows']  = $this->forecast_model->count_all();
+        $pager['per_page']    = $limit;
+        $pager['uri_segment'] = $pagerUriSegment;
+
+        $this->pagination->initialize($pager);
+        $this->forecast_model->limit($limit, $offset);
+
+        $records = $this->forecast_model->find_all();
+
+        Template::set('records', $records);
+
+        Template::set_block('sub_nav', 'content/_sub_nav_forecast');
+
+        Template::set('toolbar_title', lang('forecast_manage'));
+
+        Template::render();
     }
 
-    public function forecast()
+    public function create_forecast()
     {
-        Template::set('forecast');
-        Template::set('toolbar_title', 'Sales - Forecast');
+        $this->auth->restrict($this->permissionCreate);
+
+        if (isset($_POST['save'])) {
+            if ($insert_id = $this->save_forecast()) {
+                log_activity($this->auth->user_id(), lang('forecast_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'forecast');
+                Template::set_message(lang('forecast_create_success'), 'success');
+
+                redirect(SITE_AREA . '/content/sales/forecast');
+            }
+
+            // Not validation error
+            if (!empty($this->forecast_model->error)) {
+                Template::set_message(lang('forecast_create_failure') . $this->forecast_model->error, 'error');
+            }
+        }
+
+        Template::set_block('sub_nav', 'content/_sub_nav_forecast');
+
+        Template::set('toolbar_title', lang('forecast_action_create'));
+
+        Template::render();
+    }
+
+    private function save_forecast($type = 'insert', $id = 0)
+    {
+        if ($type == 'update') {
+            $_POST['id'] = $id;
+        }
+
+        // Validate the data
+        $this->form_validation->set_rules($this->forecast_model->get_validation_rules());
+        if ($this->form_validation->run() === false) {
+            return false;
+        }
+
+        // Make sure we only pass in the fields we want
+
+        $data = $this->forecast_model->prep_data($this->input->post());
+
+        // Additional handling for default values should be added below,
+        // or in the model's prep_data() method
+
+
+        $return = false;
+        if ($type == 'insert') {
+            $id = $this->forecast_model->insert($data);
+
+            if (is_numeric($id)) {
+                $return = $id;
+            }
+        } elseif ($type == 'update') {
+            $return = $this->forecast_model->update($id, $data);
+        }
+
+        return $return;
+    }
+
+    public function edit_forecast()
+    {
+        $id = $this->uri->segment(5);
+        if (empty($id)) {
+            Template::set_message(lang('forecast_invalid_id'), 'error');
+
+            redirect(SITE_AREA . '/content/sales');
+        }
+
+        if (isset($_POST['save'])) {
+            $this->auth->restrict($this->permissionEdit);
+
+            if ($this->save_forecast('update', $id)) {
+                log_activity($this->auth->user_id(), lang('forecast_act_edit_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'forecast');
+                Template::set_message(lang('forecast_edit_success'), 'success');
+                redirect(SITE_AREA . '/content/sales/forecast');
+            }
+
+            // Not validation error
+            if (!empty($this->forecast_model->error)) {
+                Template::set_message(lang('forecast_edit_failure') . $this->forecast_model->error, 'error');
+            }
+        } elseif (isset($_POST['delete'])) {
+            $this->auth->restrict($this->permissionDelete);
+
+            if ($this->forecast_model->delete($id)) {
+                log_activity($this->auth->user_id(), lang('forecast_act_delete_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'forecast');
+                Template::set_message(lang('forecast_delete_success'), 'success');
+
+                redirect(SITE_AREA . '/content/sales/forecast');
+            }
+
+            Template::set_message(lang('forecast_delete_failure') . $this->forecast_model->error, 'error');
+        }
+
+        Template::set('forecast', $this->forecast_model->find($id));
+
+        Template::set('toolbar_title', lang('forecast_edit_heading'));
         Template::render();
     }
 }

@@ -37,10 +37,8 @@ class Sales_model extends MY_Model
 
     public function getModels()
     {
-        if (isset($_GET['page'], $_GET['rows'])) {
-            $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-            $limit = isset($_GET['rows']) ? intval($_GET['rows']) : 10;
-        }
+        $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+        $limit = isset($_GET['rows']) ? intval($_GET['rows']) : 10;
 
         $response = $this->_client->request('GET', 'sales/models', [
             'query' => [
@@ -54,15 +52,10 @@ class Sales_model extends MY_Model
         return $result;
     }
 
-    public function saveModel()
+    public function saveModel($name)
     {
-        try {
-            $user = $_POST['name'];
-        } catch (\Exception $e) {
-            die($e->getMessage());
-        }
         $data = [
-            'model' => $_POST['name'],
+            'model' => $name,
             'created_by' => $this->auth->user_id(),
             'X-API-KEY' => '1234'
         ];
@@ -76,13 +69,8 @@ class Sales_model extends MY_Model
         return $result;
     }
 
-    public function updateModel()
+    public function updateModel($id, $name)
     {
-        if (isset($_REQUEST['id'], $_REQUEST['name'])) {
-            $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : 46;
-            $name = isset($_REQUEST['id']) ? $_REQUEST['id'] : 'empty';
-        }
-
         $data = [
             'id' => $id,
             'name' => $name,
@@ -99,14 +87,8 @@ class Sales_model extends MY_Model
         return $result;
     }
 
-    public function deleteModel()
+    public function deleteModel($id)
     {
-        if (isset($_REQUEST['id'])) {
-            $id = intval($_REQUEST['id']);
-        } else {
-            $id = 31;
-        }
-
         $response = $this->_client->request('DELETE', 'sales/models', [
             'form_params' => [
                 'X-API-KEY' => '1234',

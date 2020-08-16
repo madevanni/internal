@@ -1,46 +1,76 @@
-<table id="dg" title="My Models" toolbar="#toolbar" pagination="true" idField="id" rownumbers="false" data-options="url:'get_models',method:'GET',fitColumns:true,singleSelect:true">
-    <thead>
-        <tr>
-            <th field="id" width="5">ID</th>
-            <th field="name" width="50" editor="{type:'validatebox',options:{required:true}}">Model name</th>
-            <th field="username" width="50">Created by</th>
-            <th field="created_on" width="50">Created on</th>
-        </tr>
-    </thead>
-</table>
-<div id="toolbar">
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dg').edatagrid('addRow', 0)">New</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:$('#dg').edatagrid('destroyRow')">Destroy</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')">Save</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')">Cancel</a>
-</div>
+<?php
 
-<!-- <table id="dg" title="My Models" class="easyui-datagrid" url="get_models" method="GET" toolbar="#toolbar" pagination="true" rownumbers="false" fitColumns="true" singleSelect="true">
-    <thead>
-        <tr>
-            <th field="id" width="5">ID</th>
-            <th field="name" width="50">Model name</th>
-            <th field="created_by" width="50">Created by</th>
-            <th field="created_on" width="50">Created on</th>
-        </tr>
-    </thead>
-</table>
-<div id="toolbar">
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newModel()">New Model</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editModel()">Edit Model</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyModel()">Remove Model</a>
-</div>
+$num_columns    = 8;
+$can_delete    = $this->auth->has_permission('Sales.Content.Delete');
+$can_edit        = $this->auth->has_permission('Sales.Content.Edit');
+$has_records    = isset($records) && is_array($records) && count($records);
 
-<div id="dlg" class="easyui-dialog" style="width:400px" data-options="closed:true,modal:true,border:'thin',buttons:'#dlg-buttons'">
-    <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
-        <h3>Model Information</h3>
-        <div style="margin-bottom:10px">
-            <input name="model" class="easyui-textbox" required="true" label="Model:" style="width:100%">
-        </div>
-        </div>
-    </form>
+if ($can_delete) {
+    $num_columns++;
+}
+?>
+<div class='admin-box'>
+    <h3>
+        <?php echo lang('models_area_title'); ?>
+    </h3>
+    <?php echo form_open($this->uri->uri_string()); ?>
+    <table class='table table-striped'>
+        <thead>
+            <tr>
+                <?php if ($can_delete && $has_records) : ?>
+                    <th class='column-check'><input class='check-all' type='checkbox' /></th>
+                <?php endif; ?>
+
+                <th><?php echo lang('models_field_desc'); ?></th>
+                <th><?php echo lang('models_column_deleted'); ?></th>
+                <th><?php echo lang('models_column_created'); ?></th>
+                <th><?php echo lang('models_column_modified'); ?></th>
+            </tr>
+        </thead>
+        <?php if ($has_records) : ?>
+            <tfoot>
+                <?php if ($can_delete) : ?>
+                    <tr>
+                        <td colspan='<?php echo $num_columns; ?>'>
+                            <?php echo lang('bf_with_selected'); ?>
+                            <input type='submit' name='delete' id='delete-me' class='btn btn-danger' value="<?php echo lang('bf_action_delete'); ?>" onclick="return confirm('<?php e(js_escape(lang('models_delete_confirm'))); ?>')" />
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tfoot>
+        <?php endif; ?>
+        <tbody>
+            <?php
+            if ($has_records) :
+                foreach ($records as $record) :
+            ?>
+                    <tr>
+                        <?php if ($can_delete) : ?>
+                            <td class='column-check'><input type='checkbox' name='checked[]' value='<?php echo $record->id; ?>' /></td>
+                        <?php endif; ?>
+
+                        <?php if ($can_edit) : ?>
+                            <td><?php echo anchor(SITE_AREA . '/content/sales/edit_model/' . $record->id, '<span class="icon-pencil"></span> ' .  $record->desc); ?></td>
+                        <?php else : ?>
+                            <td><?php e($record->desc); ?></td>
+                        <?php endif; ?>
+                        <td><?php echo $record->deleted > 0 ? lang('models_true') : lang('models_false'); ?></td>
+                        <td><?php e($record->created_on); ?></td>
+                        <td><?php e($record->modified_on); ?></td>
+                    </tr>
+                <?php
+                endforeach;
+            else :
+                ?>
+                <tr>
+                    <td colspan='<?php echo $num_columns; ?>'><?php echo lang('models_records_empty'); ?></td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+    <?php
+    echo form_close();
+
+    echo $this->pagination->create_links();
+    ?>
 </div>
-<div id="dlg-buttons">
-    <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveModel()" style="width:90px">Save</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">Cancel</a>
-</div> -->

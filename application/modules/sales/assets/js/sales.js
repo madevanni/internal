@@ -1,62 +1,53 @@
-$(function () {
-    $('#dg').edatagrid({
-        url: 'get_models',
-        saveUrl: 'save_model',
-        updateUrl: 'update_model',
-        destroyUrl: 'destroy_model'
+var url;
+function newModel() {
+    $('#dlg').dialog('open').dialog('center').dialog('setTitle', 'New Model');
+    $('#fm').form('clear');
+    url = 'save_model';
+}
+function editModel() {
+    var row = $('#dg').datagrid('getSelected');
+    if (row) {
+        $('#dlg').dialog('open').dialog('center').dialog('setTitle', 'Edit Model');
+        $('#fm').form('load', row);
+        url = 'update_model?id=' + row.id;
+    }
+}
+function saveModel() {
+    $('#fm').form('submit', {
+        url: url,
+        onSubmit: function () {
+            return $(this).form('validate');
+        },
+        success: function (result) {
+            var result = eval('(' + result + ')');
+            if (result.errorMsg) {
+                $.messager.show({
+                    title: 'Error',
+                    msg: result.errorMsg
+                });
+            } else {
+                $('#dlg').dialog('close');		// close the dialog
+                $('#dg').datagrid('reload');	// reload the user data
+            }
+        }
     });
-});
-
-// var url;
-// function newModel() {
-//     $('#dlg').dialog('open').dialog('center').dialog('setTitle', 'New Model');
-//     $('#fm').form('clear');
-//     url = 'save_model';
-// }
-// function editModel() {
-//     var row = $('#dg').datagrid('getSelected');
-//     if (row) {
-//         $('#dlg').dialog('open').dialog('center').dialog('setTitle', 'Edit Model');
-//         $('#fm').form('load', row);
-//         url = 'update_model?id=' + row.id;
-//     }
-// }
-// function saveModel() {
-//     $('#fm').form('submit', {
-//         url: url,
-//         onSubmit: function () {
-//             return $(this).form('validate');
-//         },
-//         success: function (result) {
-//             var result = eval('(' + result + ')');
-//             if (result.errorMsg) {
-//                 $.messager.show({
-//                     title: 'Error',
-//                     msg: result.errorMsg
-//                 });
-//             } else {
-//                 $('#dlg').dialog('close');		// close the dialog
-//                 $('#dg').datagrid('reload');	// reload the model data
-//             }
-//         }
-//     });
-// }
-// function destroyModel() {
-//     var row = $('#dg').datagrid('getSelected');
-//     if (row) {
-//         $.messager.confirm('Confirm', 'Are you sure you want to destroy this model?', function (r) {
-//             if (r) {
-//                 $.post('destroy_model', { id: row.id }, function (result) {
-//                     if (result.success) {
-//                         $('#dg').datagrid('reload');	// reload the model data
-//                     } else {
-//                         $.messager.show({	// show error message
-//                             title: 'Error',
-//                             msg: result.errorMsg
-//                         });
-//                     }
-//                 }, 'json');
-//             }
-//         });
-//     }
-// }
+}
+function destroyModel() {
+    var row = $('#dg').datagrid('getSelected');
+    if (row) {
+        $.messager.confirm('Confirm', 'Are you sure you want to destroy this user?', function (r) {
+            if (r) {
+                $.post('destroy_model', { id: row.id }, function (result) {
+                    if (result.success) {
+                        $('#dg').datagrid('reload');	// reload the user data
+                    } else {
+                        $.messager.show({	// show error message
+                            title: 'Error',
+                            msg: result.errorMsg
+                        });
+                    }
+                }, 'json');
+            }
+        });
+    }
+}
