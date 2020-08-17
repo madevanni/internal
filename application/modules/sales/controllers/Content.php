@@ -27,11 +27,10 @@ class Content extends Admin_Controller
 
         $this->load->helper('form');
 
-        $this->load->model(array('sales/sales_model', 'sales/models_model', 'sales/forecast_model'));
-        $this->lang->load('models');
-
+        $this->load->model(array('sales/sales_model', 'sales/models_model', 'sales/forecast_model', 'sales/partners_model'));
+        
         $this->auth->restrict($this->permissionView);
-        $this->lang->load(array('sales', 'models', 'forecast'));
+        $this->lang->load(array('sales', 'models', 'forecast', 'partners'));
 
         $this->form_validation->set_error_delimiters("<span class='error'>", "</span>");
 
@@ -54,30 +53,33 @@ class Content extends Admin_Controller
      *
      * @return void
      */
-    public function partners()
+    public function partners($offset = 0)
     {
-        Template::set('toolbar_title', 'Business Partners');
+        $pagerUriSegment = 5;
+        $pagerBaseUrl = site_url(SITE_AREA . '/content/planning/partners') . '/';
+
+        $limit  = $this->settings_lib->item('site.list_limit') ?: 15;
+
+        $partners = $this->partners_model->get_partners();
+
+        $this->load->library('pagination');
+        $pager['base_url']    = $pagerBaseUrl;
+        $pager['total_rows']  = $partners['total'];
+        $pager['per_page']    = $limit;
+        $pager['uri_segment'] = $pagerUriSegment;
+
+        $this->pagination->initialize($pager);
+        $this->partners_model->limit($limit, $offset);
+
+        $records = $partners['rows'];
+
+        Template::set('records', $records);
+
+        Template::set_block('sub_nav', 'content/_sub_nav_partner');
+
+        Template::set('toolbar_title', lang('partners_manage'));
+
         Template::render();
-    }
-
-    public function getPartners()
-    {
-        // $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
-        // $rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
-        // $offset = ($page - 1) * $rows;
-
-        // $response = $this->_client->request('GET', 'sales/partners', [
-        //     'query' => [
-        //         'X-API-KEY' => '1234',
-        //         'rows' => $rows,
-        //         'offset' => $offset
-        //     ]
-        // ]);
-
-        // $result = json_decode($response->getBody()->getContents(), true);
-        // $this->output->set_content_type('application/json');
-        // echo json_encode($result, true);
-        // $this->output->enable_profiler(false);
     }
 
     public function models($offset = 0)

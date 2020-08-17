@@ -1,49 +1,59 @@
-<table id="dg" title="Items" class="easyui-datagrid" style="width:100%;height:250px" url="<?php echo $url ?>" toolbar="#toolbar" pagination="true" rownumbers="true" fitColumns="true" singleSelect="true">
-    <thead>
-        <tr>
-            <th field="id" width="50">ID</th>
-            <th field="description" width="50">Description</th>
-            <th field="item_type" width="50">Item Type</th>
-            <th field="search_key" width="50">Search Key</th>
-            <th field="item_group" width="50">Item Group</th>
-            <th field="item_group_desc" width="50">Group Desc</th>
-            <th field="unit" width="50">Unit</th>
-        </tr>
-    </thead>
-</table>
-<div id="toolbar">
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newItem()">New Item</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editItem()">Edit Item</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyItem()">Remove Item</a>
-</div>
+<?php
 
-<div id="dlg" class="easyui-dialog" style="width:400px" data-options="closed:true,modal:true,border:'thin',buttons:'#dlg-buttons'">
-    <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
-        <h3>Item Information</h3>
-        <div style="margin-bottom:10px">
-            <input name="ID" class="easyui-textbox" required="true" label="ID:" style="width:100%" disabled>
-        </div>
-        <div style="margin-bottom:10px">
-            <input name="description" class="easyui-textbox" required="true" label="Description:" style="width:100%">
-        </div>
-        <div style="margin-bottom:10px">
-            <input name="item_type" class="easyui-textbox" required="true" label="Item Type:" style="width:100%">
-        </div>
-        <div style="margin-bottom:10px">
-            <input name="search_key" class="easyui-textbox" required="true" label="Search Key:" style="width:100%">
-        </div>
-        <div style="margin-bottom:10px">
-            <input name="item_group" class="easyui-textbox" required="true" label="Item Group:" style="width:100%">
-        </div>
-        <div style="margin-bottom:10px">
-            <input name="item_group_desc" class="easyui-textbox" required="true" label="Group Desc:" style="width:100%">
-        </div>
-        <div style="margin-bottom:10px">
-            <input name="unit" class="easyui-textbox" required="true" label="Unit:" style="width:100%">
-        </div>
-    </form>
-</div>
-<div id="dlg-buttons">
-    <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveItem()" style="width:90px">Save</a>
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">Cancel</a>
+$num_columns    = 7;
+$can_delete    = $this->auth->has_permission('Planning.Content.Delete');
+$can_edit        = $this->auth->has_permission('Planning.Content.Edit');
+$has_records    = isset($records) && is_array($records) && count($records);
+
+?>
+<div class='admin-box'>
+    <h3>
+        <?php echo lang('items_area_title'); ?>
+    </h3>
+    <?php echo form_open($this->uri->uri_string()); ?>
+    <table class='table table-striped'>
+        <thead>
+            <tr>
+                <th><?php echo lang('items_field_item_id'); ?></th>
+                <th><?php echo lang('items_field_desc'); ?></th>
+                <th><?php echo lang('items_field_item_type'); ?></th>
+                <th><?php echo lang('items_field_search_key'); ?></th>
+                <th><?php echo lang('items_field_item_group'); ?></th>
+                <th><?php echo lang('items_field_item_group_desc'); ?></th>
+                <th><?php echo lang('items_field_unit'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if ($has_records) :
+                foreach ($records as $record) :
+            ?>
+                    <tr>
+                        <?php if ($can_edit) : ?>
+                            <td><?php echo anchor(SITE_AREA . '/content/planning/bom/' . $record['id'], '<span class="icon-list"></span> ' .  $record['id']); ?></td>
+                        <?php else : ?>
+                            <td><?php $record['id']; ?></td>
+                        <?php endif; ?>
+                        <td><?php echo $record['description']; ?></td>
+                        <td><?php echo $record['item_type']; ?></td>
+                        <td><?php echo $record['search_key']; ?></td>
+                        <td><?php echo $record['item_group']; ?></td>
+                        <td><?php echo $record['item_group_desc']; ?></td>
+                        <td><?php echo $record['unit']; ?></td>
+                    </tr>
+                <?php
+                endforeach;
+            else :
+                ?>
+                <tr>
+                    <td colspan='<?php echo $num_columns; ?>'><?php echo lang('items_records_empty'); ?></td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+    <?php
+    echo form_close();
+
+    echo $this->pagination->create_links();
+    ?>
 </div>

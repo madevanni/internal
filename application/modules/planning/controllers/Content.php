@@ -8,7 +8,8 @@ use GuzzleHttp\Psr7\Uri;
 /**
  * Content controller
  */
-class Content extends Admin_Controller {
+class Content extends Admin_Controller
+{
 
     protected $permissionCreate = 'Planning.Content.Create';
     protected $permissionDelete = 'Planning.Content.Delete';
@@ -22,7 +23,8 @@ class Content extends Admin_Controller {
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->_client = new Client([
@@ -31,39 +33,189 @@ class Content extends Admin_Controller {
             'query' => ['X-API-KEY' => '1234']
         ]);
 
-        $this->load->model('planning/planning_model');
+        $this->load->model(array('planning/planning_model', 'planning/items_model', 'planning/calendar_model'));
 
         $this->auth->restrict($this->permissionView);
-        $this->lang->load('planning');
+        $this->lang->load(array('planning', 'items', 'calendar'));
 
         $this->form_validation->set_error_delimiters("<span class='error'>", "</span>");
 
-        Template::set_block('sub_nav', 'content/_sub_nav');
-
         Assets::add_js(array(
-            'easyui/jquery.easyui.min.js',
-            'easyui/extension/jquery.edatagrid.js'
+            'jquery-ui-1.8.13.min.js'
         ));
         Assets::add_module_js('planning', 'planning.js');
+        Assets::add_module_js('planning', 'calendar.js');
         Assets::add_css(array(
-            'easyui/themes/default/easyui.css',
-            'easyui/themes/icon.css'
+            'flick/jquery-ui-1.8.13.custom.css'
         ));
         Assets::add_module_css('planning', 'planning.css');
     }
 
-    /**
-     * Display a list of Forecast data.
-     * Using EasyUI 1.8.1
-     * with extension edatagrid
-     *
-     * @return void
-     */
-    public function forecast() {
+    public function calendar($offset = 0)
+    {
+        // Deleting anything?
+        if (isset($_POST['delete'])) {
+            $this->auth->restrict($this->permissionDelete);
+            $checked = $this->input->post('checked');
+            if (is_array($checked) && count($checked)) {
 
-        Template::set('forecast');
-        Template::set('toolbar_title', 'Planning - Forecast');
+                // If any of the deletions fail, set the result to false, so
+                // failure message is set if any of the attempts fail, not just
+                // the last attempt
+
+                $result = true;
+                foreach ($checked as $pid) {
+                    $deleted = $this->calendar_model->delete($pid);
+                    if ($deleted == false) {
+                        $result = false;
+                    }
+                }
+                if ($result) {
+                    Template::set_message(count($checked) . ' ' . lang('calendar_delete_success'), 'success');
+                } else {
+                    Template::set_message(lang('calendar_delete_failure') . $this->calendar_model->error, 'error');
+                }
+            }
+        }
+        $pagerUriSegment = 5;
+        $pagerBaseUrl = site_url(SITE_AREA . '/content/planning/calendar') . '/';
+
+        $limit  = $this->settings_lib->item('site.list_limit') ?: 15;
+
+        $this->load->library('pagination');
+        $pager['base_url']    = $pagerBaseUrl;
+        $pager['total_rows']  = $this->calendar_model->count_all();
+        $pager['per_page']    = $limit;
+        $pager['uri_segment'] = $pagerUriSegment;
+
+        $this->pagination->initialize($pager);
+        $this->calendar_model->limit($limit, $offset);
+
+        $records = $this->calendar_model->find_all();
+
+        Template::set('records', $records);
+
+        Template::set_block('sub_nav', 'content/_sub_nav_calendar');
+
+        Template::set('toolbar_title', lang('calendar_manage'));
+
         Template::render();
+    }
+
+    public function create_calendar()
+    {
+        $this->auth->restrict($this->permissionCreate);
+
+        if (isset($_POST['save'])) {
+            if ($insert_id = $this->save_calendar()) {
+                log_activity($this->auth->user_id(), lang('calendar_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'calendar');
+                Template::set_message(lang('calendar_create_success'), 'success');
+
+                redirect(SITE_AREA . '/content/planning/calendar');
+            }
+
+            // Not validation error
+            if (!empty($this->calendar_model->error)) {
+                Template::set_message(lang('calendar_create_failure') . $this->calendar_model->error, 'error');
+            }
+        }
+
+        Template::set_block('sub_nav', 'content/_sub_nav_calendar');
+
+        Template::set('toolbar_title', lang('calendar_action_create'));
+
+        Template::render();
+    }
+
+    public function edit_calendar()
+    {
+        $id = $this->uri->segment(5);
+        if (empty($id)) {
+            Template::set_message(lang('calendar_invalid_id'), 'error');
+
+            redirect(SITE_AREA . '/content/planning/calendar');
+        }
+
+        if (isset($_POST['save'])) {
+            $this->auth->restrict($this->permissionEdit);
+
+            if ($this->save_calendar('update', $id)) {
+                log_activity($this->auth->user_id(), lang('calendar_act_edit_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'calendar');
+                Template::set_message(lang('calendar_edit_success'), 'success');
+                redirect(SITE_AREA . '/content/planning/calendar');
+            }
+
+            // Not validation error
+            if (!empty($this->calendar_model->error)) {
+                Template::set_message(lang('calendar_edit_failure') . $this->calendar_model->error, 'error');
+            }
+        } elseif (isset($_POST['delete'])) {
+            $this->auth->restrict($this->permissionDelete);
+
+            if ($this->calendar_model->delete($id)) {
+                log_activity($this->auth->user_id(), lang('calendar_act_delete_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'calendar');
+                Template::set_message(lang('calendar_delete_success'), 'success');
+
+                redirect(SITE_AREA . '/content/planning/calendar');
+            }
+
+            Template::set_message(lang('calendar_delete_failure') . $this->calendar_model->error, 'error');
+        }
+
+        Template::set('calendar', $this->calendar_model->find($id));
+
+        Template::set_block('sub_nav', 'content/_sub_nav_calendar');
+
+        Template::set('toolbar_title', lang('calendar_edit_heading'));
+        Template::render();
+    }
+
+    //--------------------------------------------------------------------------
+    // !PRIVATE METHODS
+    //--------------------------------------------------------------------------
+
+    /**
+     * Save the data.
+     *
+     * @param string $type Either 'insert' or 'update'.
+     * @param int    $id   The ID of the record to update, ignored on inserts.
+     *
+     * @return boolean|integer An ID for successful inserts, true for successful
+     * updates, else false.
+     */
+    private function save_calendar($type = 'insert', $id = 0)
+    {
+        if ($type == 'update') {
+            $_POST['db_date'] = $id;
+        }
+
+        // Validate the data
+        $this->form_validation->set_rules($this->calendar_model->get_validation_rules());
+        if ($this->form_validation->run() === false) {
+            return false;
+        }
+
+        // Make sure we only pass in the fields we want
+
+        $data = $this->calendar_model->prep_data($this->input->post());
+
+        // Additional handling for default values should be added below,
+        // or in the model's prep_data() method
+
+        $data['db_date']    = $this->input->post('db_date') ? $this->input->post('db_date') : '0000-00-00';
+
+        $return = false;
+        if ($type == 'insert') {
+            $id = $this->calendar_model->insert($data);
+
+            if (is_numeric($id)) {
+                $return = $id;
+            }
+        } elseif ($type == 'update') {
+            $return = $this->calendar_model->update($id, $data);
+        }
+
+        return $return;
     }
 
     /**
@@ -71,52 +223,68 @@ class Content extends Admin_Controller {
      * 
      * @return void
      */
-    public function items() {
-        Template::set('items', $this->planning_model->getItems());
-        Template::set('toolbar_title', 'Planning - Items');
-        $response = $this->_client->request('GET', 'items/details', [
-            'on_stats' => function (TransferStats $stats) use (&$url) {
-                $url = $stats->getEffectiveUri();
-            }
-        ])->getBody()->getContents();
-        Template::set('url', $url);
+    public function items($offset = 0)
+    {
+        $pagerUriSegment = 5;
+        $pagerBaseUrl = site_url(SITE_AREA . '/content/planning/items') . '/';
+
+        $limit  = $this->settings_lib->item('site.list_limit') ?: 15;
+
+        $items = $this->items_model->get_items();
+
+        $this->load->library('pagination');
+        $pager['base_url']    = $pagerBaseUrl;
+        $pager['total_rows']  = $items['total'];
+        $pager['per_page']    = $limit;
+        $pager['uri_segment'] = $pagerUriSegment;
+
+        $this->pagination->initialize($pager);
+
+        $records = $items['rows'];
+
+        Template::set('records', $records);
+
+        Template::set_block('sub_nav', 'content/_sub_nav_item');
+
+        Template::set('toolbar_title', lang('items_manage'));
+
         Template::render();
     }
-    
+
     public function getItems()
     {
         $result = $this->planning_model->getItems();
         return json_encode($result);
     }
 
-    /**
-     * Create a Planning object.
-     *
-     * @return void
-     */
-    public function create() {
-        $this->auth->restrict($this->permissionCreate);
+    // /**
+    //  * Create a Planning object.
+    //  *
+    //  * @return void
+    //  */
+    // public function create() {
+    //     $this->auth->restrict($this->permissionCreate);
 
-        Template::set('toolbar_title', lang('planning_action_create'));
+    //     Template::set('toolbar_title', lang('planning_action_create'));
 
-        Template::render();
-    }
+    //     Template::render();
+    // }
 
-    /**
-     * Allows editing of Planning data.
-     *
-     * @return void
-     */
-    public function edit() {
-        $id = $this->uri->segment(5);
-        if (empty($id)) {
-            Template::set_message(lang('planning_invalid_id'), 'error');
+    // /**
+    //  * Allows editing of Planning data.
+    //  *
+    //  * @return void
+    //  */
+    // public function edit() {
+    //     $id = $this->uri->segment(5);
+    //     if (empty($id)) {
+    //         Template::set_message(lang('planning_invalid_id'), 'error');
 
-            redirect(SITE_AREA . '/content/planning');
-        }
+    //         redirect(SITE_AREA . '/content/planning');
+    //     }
 
-        Template::set('toolbar_title', lang('planning_edit_heading'));
-        Template::render();
-    }
+    //     Template::set('toolbar_title', lang('planning_edit_heading'));
+    //     Template::render();
+    // }
 
 }
