@@ -20,7 +20,7 @@ if ($can_delete) {
 				<?php if ($can_delete && $has_records) : ?>
 					<th class='column-check'><input class='check-all' type='checkbox' /></th>
 				<?php endif; ?>
-
+				<th><?php echo lang('calendar_field_db_date'); ?></th>
 				<th><?php echo lang('calendar_field_year'); ?></th>
 				<th><?php echo lang('calendar_field_month'); ?></th>
 				<th><?php echo lang('calendar_field_day'); ?></th>

@@ -6,8 +6,8 @@ $lang['forecast_edit']        = 'Edit';
 $lang['forecast_true']        = 'True';
 $lang['forecast_false']       = 'False';
 $lang['forecast_create']      = 'Create';
-$lang['forecast_list']        = 'List forecast';
-$lang['forecast_new']       = 'New forecast';
+$lang['forecast_list']        = 'List';
+$lang['forecast_new']       = 'New';
 $lang['forecast_edit_text']     = 'Edit this to suit your needs';
 $lang['forecast_no_records']    = 'There are no forecast in the system.';
 $lang['forecast_create_new']    = 'Create a new Forecast.';
@@ -49,23 +49,16 @@ $lang['forecast_column_modified_by'] = 'Modified By';
 
 // Module Details
 $lang['forecast_module_name'] = 'Forecast';
-$lang['forecast_module_description'] = 'Sales forecast menu';
+$lang['forecast_module_description'] = 'Your module description';
 $lang['forecast_area_title'] = 'Forecast';
 
 // Fields
 $lang['forecast_field_bp_id'] = 'Business Partner';
 $lang['forecast_field_model_id'] = 'Model';
-$lang['forecast_field_item_id'] = 'Part number';
-$lang['forecast_field_fy'] = 'Fiscal Year';
-$lang['forecast_field_p_one'] = '1';
-$lang['forecast_field_p_two'] = '2';
-$lang['forecast_field_p_three'] = '3';
-$lang['forecast_field_p_four'] = '4';
-$lang['forecast_field_p_five'] = '5';
-$lang['forecast_field_p_six'] = '6';
-$lang['forecast_field_p_seven'] = '7';
-$lang['forecast_field_p_eight'] = '8';
-$lang['forecast_field_p_nine'] = '9';
-$lang['forecast_field_p_ten'] = '10';
-$lang['forecast_field_p_eleven'] = '11';
-$lang['forecast_field_p_twelve'] = '12';
+$lang['forecast_field_item_id'] = 'Item';
+$lang['forecast_field_cust_part'] = 'Customer part';
+$lang['forecast_field_fy'] = 'Fiscal';
+$lang['forecast_field_period'] = 'Period';
+$lang['forecast_field_sales_qty'] = 'Sales';
+$lang['forecast_field_inv_qty'] = 'Inventory';
+$lang['forecast_field_prod_qty'] = 'Production';

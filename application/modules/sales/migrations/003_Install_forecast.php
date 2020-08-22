@@ -19,82 +19,53 @@ class Migration_Install_forecast extends Migration
         'bp_id' => array(
             'type'       => 'VARCHAR',
             'constraint' => 255,
-            'null'       => false,
+            'null'       => true,
         ),
         'model_id' => array(
             'type'       => 'INT',
             'constraint' => 11,
-            'null'       => false,
+            'null'       => true,
         ),
         'item_id' => array(
             'type'       => 'VARCHAR',
             'constraint' => 255,
-            'null'       => false,
+            'null'       => true,
+        ),
+        'cust_part' => array(
+            'type'       => 'VARCHAR',
+            'constraint' => 255,
+            'null'       => true,
         ),
         'fy' => array(
             'type'       => 'VARCHAR',
-            'constraint' => 255,
-            'null'       => false,
+            'constraint' => 4,
+            'null'       => true,
         ),
-        'p_one' => array(
+        'period' => array(
+            'type'       => 'INT',
+            'constraint' => 2,
+            'null'       => true,
+        ),
+        'sales_qty' => array(
             'type'       => 'INT',
             'constraint' => 11,
-            'default'    => 0
+            'null'       => true,
         ),
-        'p_two' => array(
+        'inv_qty' => array(
             'type'       => 'INT',
             'constraint' => 11,
-            'default'    => 0
+            'null'       => true,
+            'default'    => '0'
         ),
-        'p_three' => array(
+        'inv_date' => array(
+            'type'       => 'datetime',
+            'default'    => '0000-00-00 00:00:00',
+        ),
+        'prod_qty' => array(
             'type'       => 'INT',
             'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_four' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_five' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_six' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_seven' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_eight' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_nine' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_ten' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_eleven' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
-        ),
-        'p_twelve' => array(
-            'type'       => 'INT',
-            'constraint' => 11,
-            'default'    => 0
+            'null'       => true,
+            'default'    => '0'
         ),
         'deleted' => array(
             'type'       => 'TINYINT',

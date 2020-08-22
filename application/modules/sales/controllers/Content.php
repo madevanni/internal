@@ -28,7 +28,7 @@ class Content extends Admin_Controller
         $this->load->helper('form');
 
         $this->load->model(array('sales/sales_model', 'sales/models_model', 'sales/forecast_model', 'sales/partners_model'));
-        
+
         $this->auth->restrict($this->permissionView);
         $this->lang->load(array('sales', 'models', 'forecast', 'partners'));
 
@@ -142,7 +142,7 @@ class Content extends Admin_Controller
                 log_activity($this->auth->user_id(), lang('models_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'models');
                 Template::set_message(lang('models_create_success'), 'success');
 
-                redirect(SITE_AREA . '/content/models');
+                redirect(SITE_AREA . '/content/sales/models');
             }
 
             // Not validation error
@@ -164,7 +164,7 @@ class Content extends Admin_Controller
         if (empty($id)) {
             Template::set_message(lang('models_invalid_id'), 'error');
 
-            redirect(SITE_AREA . '/content/sales');
+            redirect(SITE_AREA . '/content/sales/models');
         }
 
         if (isset($_POST['save'])) {
@@ -292,7 +292,7 @@ class Content extends Admin_Controller
 
         if (isset($_POST['save'])) {
             if ($insert_id = $this->save_forecast()) {
-                log_activity($this->auth->user_id(), lang('forecast_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'forecast');
+                log_activity($this->auth->user_id(), lang('forecast_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'psi');
                 Template::set_message(lang('forecast_create_success'), 'success');
 
                 redirect(SITE_AREA . '/content/sales/forecast');
@@ -351,7 +351,7 @@ class Content extends Admin_Controller
         if (empty($id)) {
             Template::set_message(lang('forecast_invalid_id'), 'error');
 
-            redirect(SITE_AREA . '/content/sales');
+            redirect(SITE_AREA . '/content/sales/forecast');
         }
 
         if (isset($_POST['save'])) {

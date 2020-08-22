@@ -48,82 +48,47 @@ class Forecast_model extends BF_Model
 		array(
 			'field' => 'bp_id',
 			'label' => 'lang:forecast_field_bp_id',
-			'rules' => 'required|max_length[255]',
+			'rules' => 'max_length[255]',
 		),
 		array(
 			'field' => 'model_id',
 			'label' => 'lang:forecast_field_model_id',
-			'rules' => 'required|max_length[11]',
+			'rules' => 'max_length[11]',
 		),
 		array(
 			'field' => 'item_id',
 			'label' => 'lang:forecast_field_item_id',
-			'rules' => 'required|max_length[255]',
+			'rules' => 'max_length[255]',
+		),
+		array(
+			'field' => 'cust_part',
+			'label' => 'lang:forecast_field_cust_part',
+			'rules' => 'max_length[255]',
 		),
 		array(
 			'field' => 'fy',
 			'label' => 'lang:forecast_field_fy',
-			'rules' => 'required|max_length[255]',
+			'rules' => 'max_length[4]',
 		),
 		array(
-			'field' => 'p_one',
-			'label' => 'lang:forecast_field_p_one',
+			'field' => 'period',
+			'label' => 'lang:forecast_field_period',
+			'rules' => 'max_length[2]',
+		),
+		array(
+			'field' => 'sales_qty',
+			'label' => 'lang:forecast_field_sales_qty',
 			'rules' => 'max_length[11]',
 		),
 		array(
-			'field' => 'p_two',
-			'label' => 'lang:forecast_field_p_two',
+			'field' => 'inv_qty',
+			'label' => 'lang:forecast_field_inv_qty',
 			'rules' => 'max_length[11]',
 		),
 		array(
-			'field' => 'p_three',
-			'label' => 'lang:forecast_field_p_three',
+			'field' => 'prod_qty',
+			'label' => 'lang:forecast_field_prod_qty',
 			'rules' => 'max_length[11]',
-		),
-		array(
-			'field' => 'p_four',
-			'label' => 'lang:forecast_field_p_four',
-			'rules' => 'max_length[11]',
-		),
-		array(
-			'field' => 'p_five',
-			'label' => 'lang:forecast_field_p_five',
-			'rules' => '',
-		),
-		array(
-			'field' => 'p_six',
-			'label' => 'lang:forecast_field_p_six',
-			'rules' => '',
-		),
-		array(
-			'field' => 'p_seven',
-			'label' => 'lang:forecast_field_p_seven',
-			'rules' => '',
-		),
-		array(
-			'field' => 'p_eight',
-			'label' => 'lang:forecast_field_p_eight',
-			'rules' => '',
-		),
-		array(
-			'field' => 'p_nine',
-			'label' => 'lang:forecast_field_p_nine',
-			'rules' => '',
-		),
-		array(
-			'field' => 'p_ten',
-			'label' => 'lang:forecast_field_p_ten',
-			'rules' => '',
-		),
-		array(
-			'field' => 'p_eleven',
-			'label' => 'lang:forecast_field_p_eleven',
-			'rules' => '',
-		),
-		array(
-			'field' => 'p_twelve',
-			'label' => 'lang:forecast_field_p_twelve',
-			'rules' => '',
 		),
 	);
 	protected $insert_validation_rules  = array();
