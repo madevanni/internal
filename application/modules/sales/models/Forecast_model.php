@@ -103,4 +103,23 @@ class Forecast_model extends BF_Model
     {
         parent::__construct();
     }
+    public function delete_forecast($pid) {
+
+    	$ch = curl_init();
+		$inputan['kode_aplikasi'] = $this->config->item("kode_aplikasi");
+		$inputan['id'] = $pid;
+		$inputan['user_id'] = $this->session->userdata("user_id");
+		$jsoninputan = json_encode($inputan);
+		curl_setopt($ch, CURLOPT_URL,$this->config->item("url_induk")."sales/forecast/delete");
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,"data=".$jsoninputan);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$hasil = curl_exec($ch);
+		curl_close ($ch);
+
+		echo "<pre>";
+		print_r ($hasil);
+		echo "</pre>";
+		echo "<h1>lorem ipsum dolor si amet</h1>";
+    }
 }

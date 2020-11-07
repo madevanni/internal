@@ -12,7 +12,7 @@ if (validation_errors()) :
 <?php
 endif;
 
-$id = isset($models->id) ? $models->id : '';
+$id = isset($models['id']) ? $models['id'] : '';
 
 ?>
 <div class='admin-box'>
@@ -22,7 +22,7 @@ $id = isset($models->id) ? $models->id : '';
         <div class="control-group<?php echo form_error('desc') ? ' error' : ''; ?>">
             <?php echo form_label(lang('models_field_desc'), 'desc', array('class' => 'control-label')); ?>
             <div class='controls'>
-                <input id='desc' type='text' name='desc' maxlength='255' value="<?php echo set_value('desc', isset($models->desc) ? $models->desc : ''); ?>" />
+                <input id='desc' type='text' name='desc' maxlength='255' value="<?php echo set_value('desc', isset($models['desc']) ? $models['desc'] : ''); ?>" />
                 <span class='help-inline'><?php echo form_error('desc'); ?></span>
             </div>
         </div>
@@ -31,7 +31,7 @@ $id = isset($models->id) ? $models->id : '';
             <div class='controls'>
                 <?php // FIXME: not able to get checkbox value undelete 
                 ?>
-                <input id='deleted' type='checkbox' name='deleted' maxlength='1' value="<?php echo set_value('deleted', isset($models->deleted) ? $models->deleted : ''); ?>" <?php echo $models->deleted == 1 ? 'checked' : '' ?> />
+                <input id='deleted' type='checkbox' name='deleted' maxlength='1' value="<?php echo set_value('deleted', isset($models['deleted']) ? $models['deleted'] : ''); ?>" <?php echo $models['deleted'] == 1 ? 'checked' : '' ?> />
                 <span class='help-inline'><?php echo form_error('deleted'); ?></span>
             </div>
         </div>

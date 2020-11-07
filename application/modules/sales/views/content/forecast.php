@@ -46,25 +46,31 @@ if ($can_delete) {
 			<?php
 			if ($has_records) :
 				foreach ($records as $record) :
+					if ($record['deleted']==0):
 			?>
 					<tr>
 						<?php if ($can_delete) : ?>
-							<td class='column-check'><input type='checkbox' name='checked[]' value='<?php echo $record->id; ?>' /></td>
+							<td class='column-check'><input type='checkbox' name='checked[]' value='<?php echo $record["id"]; ?>' /></td>
 						<?php endif; ?>
 
-						<td><?php e($record->bp_id); ?></td>
-						<td><?php e($record->model_id); ?></td>
+						<td>
+							<?php e($record["partners"]) ; ?>
+							<br>
+							<?php e($record['bp_id']); ?>
+						</td>
+						<td><?php e($record['desc']); ?></td>
 						<?php if ($can_edit) : ?>
-							<td><?php echo anchor(SITE_AREA . '/content/sales/edit_forecast/' . $record->id, '<span class="icon-pencil"></span> ' .  $record->item_id); ?></td>
+							<td><?php echo anchor(SITE_AREA . '/content/sales/edit_forecast/' . $record['id'], '<span class="icon-pencil"></span> ' .  $record['item_id']); ?></td>
 						<?php else : ?>
-							<td><?php e($record->item_id); ?></td>
+							<td><?php e($record['item_id']); ?></td>
 						<?php endif; ?>
-						<td><?php e($record->cust_part); ?></td>
-						<td><?php e($record->fy); ?></td>
-						<td><?php e($record->period); ?></td>
-						<td><?php e($record->sales_qty); ?></td>
+						<td><?php e($record['cust_part']); ?></td>
+						<td><?php e($record['fy']); ?></td>
+						<td><?php e($record['period']); ?></td>
+						<td><?php e($record['sales_qty']); ?></td>
 					</tr>
 				<?php
+					endif;
 				endforeach;
 			else :
 				?>

@@ -17,6 +17,7 @@ $id = isset($forecast->id) ? $forecast->id : '';
 ?>
 <div class='admin-box'>
     <h3>Forecast</h3>
+    
     <?php echo form_open($this->uri->uri_string(), 'class="form-horizontal"'); ?>
         <fieldset>
             
@@ -24,7 +25,15 @@ $id = isset($forecast->id) ? $forecast->id : '';
             <div class="control-group<?php echo form_error('bp_id') ? ' error' : ''; ?>">
                 <?php echo form_label(lang('forecast_field_bp_id'), 'bp_id', array('class' => 'control-label')); ?>
                 <div class='controls'>
-                    <input id='bp_id' type='text' name='bp_id' maxlength='255' value="<?php echo set_value('bp_id', isset($forecast->bp_id) ? $forecast->bp_id : ''); ?>" />
+                    <!-- <input id='bp_id' type='text' name='bp_id' maxlength='255' value="<?php //echo set_value('bp_id', isset($forecast->bp_id) ? $forecast->bp_id : ''); ?>" /> -->
+                    <select class="form-control" id="bp_id" name="bp_id">
+                        <option value="">Select partner</option>
+                        <?php foreach ($partners["rows"] as $key => $value): ?>
+                        <option value="<?php echo $value["id"] ?>">
+                        <?php echo $value["id"]." ".$value["partners"] ?>
+                        </option>
+                        <?php endforeach ?>
+                    </select>
                     <span class='help-inline'><?php echo form_error('bp_id'); ?></span>
                 </div>
             </div>
@@ -32,7 +41,15 @@ $id = isset($forecast->id) ? $forecast->id : '';
             <div class="control-group<?php echo form_error('model_id') ? ' error' : ''; ?>">
                 <?php echo form_label(lang('forecast_field_model_id'), 'model_id', array('class' => 'control-label')); ?>
                 <div class='controls'>
-                    <input id='model_id' type='text' name='model_id' maxlength='11' value="<?php echo set_value('model_id', isset($forecast->model_id) ? $forecast->model_id : ''); ?>" />
+                    <!-- <input id='model_id' type='text' name='model_id' maxlength='11' value="<?php //echo set_value('model_id', isset($forecast->model_id) ? $forecast->model_id : ''); ?>" /> -->
+                    <select class="form-control" id="model_id" name="model_id">
+                        <option value="">Select Models</option>
+                        <?php foreach ($models["rows"] as $key => $value): ?>
+                        <option value="<?php echo $value["id"] ?>">
+                        <?php echo $value["desc"] ?>
+                        </option>
+                        <?php endforeach ?>
+                    </select>
                     <span class='help-inline'><?php echo form_error('model_id'); ?></span>
                 </div>
             </div>
@@ -40,7 +57,16 @@ $id = isset($forecast->id) ? $forecast->id : '';
             <div class="control-group<?php echo form_error('item_id') ? ' error' : ''; ?>">
                 <?php echo form_label(lang('forecast_field_item_id'), 'item_id', array('class' => 'control-label')); ?>
                 <div class='controls'>
-                    <input id='item_id' type='text' name='item_id' maxlength='255' value="<?php echo set_value('item_id', isset($forecast->item_id) ? $forecast->item_id : ''); ?>" />
+                    <!-- <input id='item_id' type='text' name='item_id' maxlength='255' value="<?php //echo set_value('item_id', isset($forecast->item_id) ? $forecast->item_id : ''); ?>" /> -->
+
+                    <select name="item_id" id="item_id">
+                        <option value="">Select Item</option>
+                        <?php foreach ($items["rows"] as $key => $item): ?>
+                        <option value="<?php echo $item['id'] ?>">
+                            <?php echo "[ ".$item["id"]." ] - ".$item["description"] ?>
+                        </option>
+                        <?php endforeach ?>
+                    </select>
                     <span class='help-inline'><?php echo form_error('item_id'); ?></span>
                 </div>
             </div>
@@ -64,7 +90,13 @@ $id = isset($forecast->id) ? $forecast->id : '';
             <div class="control-group<?php echo form_error('period') ? ' error' : ''; ?>">
                 <?php echo form_label(lang('forecast_field_period'), 'period', array('class' => 'control-label')); ?>
                 <div class='controls'>
-                    <input id='period' type='text' name='period' maxlength='2' value="<?php echo set_value('period', isset($forecast->period) ? $forecast->period : ''); ?>" />
+                    <!-- <input id='period' type='text' name='period' maxlength='2' value="<?php //echo set_value('period', isset($forecast->period) ? $forecast->period : ''); ?>" /> -->
+                    <select id="period" name="period">
+                        <option value="">Select Period</option>
+                        <?php foreach (range(1,12) as $key => $value): ?>
+                        <option value="<?php echo $value ?>"><?php echo date('F', mktime(0, 0, 0, $value, 10)) ?></option>
+                        <?php endforeach ?>
+                    </select>
                     <span class='help-inline'><?php echo form_error('period'); ?></span>
                 </div>
             </div>
@@ -72,7 +104,7 @@ $id = isset($forecast->id) ? $forecast->id : '';
             <div class="control-group<?php echo form_error('sales_qty') ? ' error' : ''; ?>">
                 <?php echo form_label(lang('forecast_field_sales_qty'), 'sales_qty', array('class' => 'control-label')); ?>
                 <div class='controls'>
-                    <input id='sales_qty' type='text' name='sales_qty' maxlength='11' value="<?php echo set_value('sales_qty', isset($forecast->sales_qty) ? $forecast->sales_qty : ''); ?>" />
+                    <input id='sales_qty' type='number' name='sales_qty' maxlength='11' value="<?php echo set_value('sales_qty', isset($forecast->sales_qty) ? $forecast->sales_qty : ''); ?>" />
                     <span class='help-inline'><?php echo form_error('sales_qty'); ?></span>
                 </div>
             </div>
@@ -80,7 +112,7 @@ $id = isset($forecast->id) ? $forecast->id : '';
         <fieldset class='form-actions'>
             <input type='submit' name='save' class='btn btn-primary' value="<?php echo lang('forecast_action_create'); ?>" />
             <?php echo lang('bf_or'); ?>
-            <?php echo anchor(SITE_AREA . '/content/forecast', lang('forecast_cancel'), 'class="btn btn-warning"'); ?>
+            <?php echo anchor(SITE_AREA . '/content/sales/forecast', lang('forecast_cancel'), 'class="btn btn-warning"'); ?>
             
         </fieldset>
     <?php echo form_close(); ?>

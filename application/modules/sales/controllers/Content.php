@@ -10,6 +10,8 @@ use GuzzleHttp\Client;
 class Content extends Admin_Controller
 {
 
+    private $_client;
+    
     protected $permissionCreate = 'Sales.Content.Create';
     protected $permissionDelete = 'Sales.Content.Delete';
     protected $permissionEdit = 'Sales.Content.Edit';
@@ -24,6 +26,11 @@ class Content extends Admin_Controller
     public function __construct()
     {
         parent::__construct();
+
+        $this->_client = new Client([
+            'base_uri' => 'http://localhost/api/',
+            'auth' => ['admin', '1234']
+        ]);
 
         $this->load->helper('form');
 
@@ -55,25 +62,14 @@ class Content extends Admin_Controller
      */
     public function partners($offset = 0)
     {
-        $pagerUriSegment = 5;
-        $pagerBaseUrl = site_url(SITE_AREA . '/content/planning/partners') . '/';
+        $client = $this->_client->request('GET', 'sales/partners', [
+            'query' => [
+                'X-API-KEY' => '1234',
+            ]
+        ]);
+        $partners = json_decode($client->getBody()->getContents(), true);
 
-        $limit  = $this->settings_lib->item('site.list_limit') ?: 15;
-
-        $partners = $this->partners_model->get_partners();
-
-        $this->load->library('pagination');
-        $pager['base_url']    = $pagerBaseUrl;
-        $pager['total_rows']  = $partners['total'];
-        $pager['per_page']    = $limit;
-        $pager['uri_segment'] = $pagerUriSegment;
-
-        $this->pagination->initialize($pager);
-        $this->partners_model->limit($limit, $offset);
-
-        $records = $partners['rows'];
-
-        Template::set('records', $records);
+        Template::set("records",$partners["rows"]);
 
         Template::set_block('sub_nav', 'content/_sub_nav_partner');
 
@@ -94,12 +90,29 @@ class Content extends Admin_Controller
                 // failure message is set if any of the attempts fail, not just
                 // the last attempt
 
+                // $result = true;
+                // foreach ($checked as $pid) {
+                //     $deleted = $this->models_model->delete($pid);
+                //     if ($deleted == false) {
+                //         $result = false;
+                //     }
+                // }
+                // if ($result) {
+                //     Template::set_message(count($checked) . ' ' . lang('models_delete_success'), 'success');
+                // } else {
+                //     Template::set_message(lang('models_delete_failure') . $this->models_model->error, 'error');
+                // }
+
+                
                 $result = true;
                 foreach ($checked as $pid) {
-                    $deleted = $this->models_model->delete($pid);
-                    if ($deleted == false) {
-                        $result = false;
-                    }
+                    $deleted = $this->_client->request('DELETE', 'sales/models', [
+                        'form_params' => [
+                            'X-API-KEY' => '1234',
+                            'id' => $pid,
+                            'user_id' => $this->session->userdata("user_id")
+                        ]
+                    ]);
                 }
                 if ($result) {
                     Template::set_message(count($checked) . ' ' . lang('models_delete_success'), 'success');
@@ -108,6 +121,7 @@ class Content extends Admin_Controller
                 }
             }
         }
+
         $pagerUriSegment = 5;
         $pagerBaseUrl = site_url(SITE_AREA . '/content/sales/models') . '/';
 
@@ -115,16 +129,28 @@ class Content extends Admin_Controller
 
         $this->load->library('pagination');
         $pager['base_url']    = $pagerBaseUrl;
-        $pager['total_rows']  = $this->models_model->count_all();
+        $total_rows = $this->_client->request('GET', 'sales/modelsCountAll', [
+            'query' => [
+                'X-API-KEY' => '1234'
+            ]
+        ]);
+        $pager['total_rows'] = json_decode($total_rows->getBody()->getContents(), true);
         $pager['per_page']    = $limit;
         $pager['uri_segment'] = $pagerUriSegment;
 
         $this->pagination->initialize($pager);
-        $this->models_model->limit($limit, $offset);
 
-        $records = $this->models_model->find_all();
+        $response = $this->_client->request('GET', 'sales/models', [
+            'query' => [
+                'X-API-KEY' => '1234',
+                'offset' => $offset,
+                'limit' => $limit
+            ]
+        ]);
 
-        Template::set('records', $records);
+        $records = json_decode($response->getBody()->getContents(), true);
+
+        Template::set('records', $records["rows"]);
 
         Template::set_block('sub_nav', 'content/_sub_nav_model');
 
@@ -136,19 +162,18 @@ class Content extends Admin_Controller
     public function create_model()
     {
         $this->auth->restrict($this->permissionCreate);
-
         if (isset($_POST['save'])) {
-            if ($insert_id = $this->save_models()) {
-                log_activity($this->auth->user_id(), lang('models_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'models');
-                Template::set_message(lang('models_create_success'), 'success');
+            $response = $this->_client->request('POST', 'sales/models', [
+                'form_params' => [
+                    "X-API-KEY" => "1234",
+                    "name" => $this->input->post("desc"),
+                    "created_by" => $this->session->userdata("user_id"),
+                ]
+            ]);
+            log_activity($this->auth->user_id(), lang('models_act_create_record') . $this->input->ip_address(), 'models');
 
-                redirect(SITE_AREA . '/content/sales/models');
-            }
-
-            // Not validation error
-            if (!empty($this->models_model->error)) {
-                Template::set_message(lang('models_create_failure') . $this->models_model->error, 'error');
-            }
+            Template::set_message(lang('models_create_success'), 'success');
+            redirect(SITE_AREA . '/content/sales/models');
         }
 
         Template::set('toolbar_title', lang('models_action_create'));
@@ -169,17 +194,17 @@ class Content extends Admin_Controller
 
         if (isset($_POST['save'])) {
             $this->auth->restrict($this->permissionEdit);
-
-            if ($this->save_models('update', $id)) {
-                log_activity($this->auth->user_id(), lang('models_act_edit_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'models');
-                Template::set_message(lang('models_edit_success'), 'success');
-                redirect(SITE_AREA . '/content/sales/models');
-            }
-
-            // Not validation error
-            if (!empty($this->models_model->error)) {
-                Template::set_message(lang('models_edit_failure') . $this->models_model->error, 'error');
-            }
+            $response = $this->_client->request('PUT', 'sales/models', [
+                'form_params' => [
+                    "X-API-KEY" => "1234",
+                    "id" => $id,
+                    "name" => $this->input->post("desc"),
+                    "modified_by" => $this->session->userdata("user_id"),
+                ]
+            ]);
+            log_activity($this->auth->user_id(), lang('models_act_edit_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'models');
+            Template::set_message('models updated', 'success');
+            redirect(SITE_AREA . '/content/sales/models');
         } elseif (isset($_POST['delete'])) {
             $this->auth->restrict($this->permissionDelete);
 
@@ -193,7 +218,16 @@ class Content extends Admin_Controller
             Template::set_message(lang('models_delete_failure') . $this->models_model->error, 'error');
         }
 
-        Template::set('models', $this->models_model->find($id));
+        $response = $this->_client->request('GET', 'sales/models', [
+            'query' => [
+                'X-API-KEY' => '1234',
+                'id' => $id
+            ]
+        ]);
+
+        $record = json_decode($response->getBody()->getContents(), true);
+
+        Template::set('models', $record);
 
         Template::set_block('sub_nav', 'content/_sub_nav_model');
 
@@ -237,22 +271,34 @@ class Content extends Admin_Controller
 
     public function forecast($offset = 0)
     {
+
         // Deleting anything?
-        if (isset($_POST['delete'])) {
+        if (isset($_POST['delete'])) 
+        {
             $this->auth->restrict($this->permissionDelete);
             $checked = $this->input->post('checked');
-            if (is_array($checked) && count($checked)) {
+            if (is_array($checked) && count($checked)) 
+            {
 
                 // If any of the deletions fail, set the result to false, so
                 // failure message is set if any of the attempts fail, not just
                 // the last attempt
 
                 $result = true;
+                $user_id = $this->session->userdata("user_id");
                 foreach ($checked as $pid) {
-                    $deleted = $this->forecast_model->delete($pid);
-                    if ($deleted == false) {
-                        $result = false;
-                    }
+
+                    //ini skrip aslinya $deleted = $this->forecast_model->delete($pid);
+                    // ini skrip buatan arif
+                    $deleted = $this->_client->request('DELETE', 'sales/forecasts', [
+                        // 'query' => [
+                        // ],
+                        'form_params' => [
+                            'X-API-KEY' => '1234',
+                            'id' => $pid,
+                            'user_id' => $user_id
+                        ]
+                    ]);
                 }
                 if ($result) {
                     Template::set_message(count($checked) . ' ' . lang('forecast_delete_success'), 'success');
@@ -261,6 +307,7 @@ class Content extends Admin_Controller
                 }
             }
         }
+
         $pagerUriSegment = 5;
         $pagerBaseUrl = site_url(SITE_AREA . '/content/sales/forecast') . '/';
 
@@ -268,22 +315,65 @@ class Content extends Admin_Controller
 
         $this->load->library('pagination');
         $pager['base_url']    = $pagerBaseUrl;
-        $pager['total_rows']  = $this->forecast_model->count_all();
+        $total_rows = $this->_client->request('GET', 'sales/forecastsCountAll', [
+            'query' => [
+                'X-API-KEY' => '1234'
+            ]
+        ]);
+        $pager['total_rows'] = json_decode($total_rows->getBody()->getContents(), true);
         $pager['per_page']    = $limit;
         $pager['uri_segment'] = $pagerUriSegment;
 
         $this->pagination->initialize($pager);
-        $this->forecast_model->limit($limit, $offset);
+        // $this->forecast_model->limit($limit, $offset);
 
-        $records = $this->forecast_model->find_all();
+        // $records = $this->forecast_model->find_all();
+        // $records = $this->sales_model->find_all_forecasts($limit, $offset);
+        $response = $this->_client->request('GET', 'sales/forecasts', [
+            'query' => [
+                'X-API-KEY' => '1234',
+                'offset' => $offset,
+                'limit' => $limit
+            ]
+        ]);
 
-        Template::set('records', $records);
+        $records = json_decode($response->getBody()->getContents(), true);
+
+
+        $client = $this->_client->request('GET', 'sales/partners', [
+            'query' => [
+                'X-API-KEY' => '1234',
+                'id' => "SLIS001",
+            ]
+
+        ]);
+
+        $all_record = array();
+
+        foreach ($records as $key => $record)
+        {
+            $client_id = $record["bp_id"];
+            $client = $this->_client->request('GET', 'sales/partners', [
+                'query' => [
+                    'X-API-KEY' => '1234',
+                    'id' => $client_id,
+                ]
+
+            ]);
+            $client = json_decode($client->getBody()->getContents(), true);
+            $client = $client[0];
+            $all_record[] = array_merge($record,$client);
+        }
+
+        Template::set('records', $all_record);
+        // // Template::set('records', $records['rows']);
 
         Template::set_block('sub_nav', 'content/_sub_nav_forecast');
 
         Template::set('toolbar_title', lang('forecast_manage'));
 
         Template::render();
+
     }
 
     public function create_forecast()
@@ -291,18 +381,51 @@ class Content extends Admin_Controller
         $this->auth->restrict($this->permissionCreate);
 
         if (isset($_POST['save'])) {
-            if ($insert_id = $this->save_forecast()) {
-                log_activity($this->auth->user_id(), lang('forecast_act_create_record') . ': ' . $insert_id . ' : ' . $this->input->ip_address(), 'psi');
-                Template::set_message(lang('forecast_create_success'), 'success');
+            $response = $this->_client->request('POST', 'sales/forecasts', [
+                'form_params' => [
+                    "X-API-KEY" => "1234",
+                    "bp_id" => $this->input->post("bp_id"),
+                    "model_id" => $this->input->post("model_id"),
+                    "item_id" => $this->input->post("item_id"),
+                    "cust_part" => $this->input->post("cust_part"),
+                    "fy" => $this->input->post("fy"),
+                    "period" => $this->input->post("period"),
+                    "sales_qty" => $this->input->post("sales_qty"),
+                    "user_id" => $this->session->userdata("user_id"),
+                ]
+            ]);
 
-                redirect(SITE_AREA . '/content/sales/forecast');
-            }
-
-            // Not validation error
-            if (!empty($this->forecast_model->error)) {
-                Template::set_message(lang('forecast_create_failure') . $this->forecast_model->error, 'error');
-            }
+            Template::set_message(lang('forecast_create_success'), 'success');
+            redirect(SITE_AREA . '/content/sales/forecast');
         }
+
+        $client = $this->_client->request('GET', 'sales/partners', [
+            'query' => [
+                'X-API-KEY' => '1234',
+            ]
+
+        ]);
+        $partners = json_decode($client->getBody()->getContents(), true);
+
+        $client = $this->_client->request('GET', 'sales/models', [
+            'query' => [
+                'X-API-KEY' => '1234',
+            ]
+
+        ]);
+        $models = json_decode($client->getBody()->getContents(), true);
+
+        $client = $this->_client->request('GET', 'items/details', [
+            'query' => [
+                'X-API-KEY' => '1234',
+            ]
+        ]);
+        $items = json_decode($client->getBody()->getContents(), true);
+
+
+        Template::set('partners', $partners);
+        Template::set('models', $models);
+        Template::set('items', $items);
 
         Template::set_block('sub_nav', 'content/_sub_nav_forecast');
 
@@ -345,9 +468,9 @@ class Content extends Admin_Controller
         return $return;
     }
 
-    public function edit_forecast()
+    public function edit_forecast($id)
     {
-        $id = $this->uri->segment(5);
+        
         if (empty($id)) {
             Template::set_message(lang('forecast_invalid_id'), 'error');
 
@@ -357,16 +480,22 @@ class Content extends Admin_Controller
         if (isset($_POST['save'])) {
             $this->auth->restrict($this->permissionEdit);
 
-            if ($this->save_forecast('update', $id)) {
-                log_activity($this->auth->user_id(), lang('forecast_act_edit_record') . ': ' . $id . ' : ' . $this->input->ip_address(), 'forecast');
-                Template::set_message(lang('forecast_edit_success'), 'success');
-                redirect(SITE_AREA . '/content/sales/forecast');
-            }
-
-            // Not validation error
-            if (!empty($this->forecast_model->error)) {
-                Template::set_message(lang('forecast_edit_failure') . $this->forecast_model->error, 'error');
-            }
+            $response = $this->_client->request('PUT', 'sales/forecasts', [
+                'form_params' => [
+                    "X-API-KEY" => "1234",
+                    "id" => $id,
+                    "bp_id" => $this->input->post("bp_id"),
+                    "model_id" => $this->input->post("model_id"),
+                    "item_id" => $this->input->post("item_id"),
+                    "cust_part" => $this->input->post("cust_part"),
+                    "fy" => $this->input->post("fy"),
+                    "period" => $this->input->post("period"),
+                    "sales_qty" => $this->input->post("sales_qty"),
+                    "user_id" => $this->session->userdata("user_id"),
+                ]
+            ]);
+            Template::set_message('forecast updated', 'success');
+            redirect(SITE_AREA . '/content/sales/forecast');
         } elseif (isset($_POST['delete'])) {
             $this->auth->restrict($this->permissionDelete);
 
@@ -380,8 +509,41 @@ class Content extends Admin_Controller
             Template::set_message(lang('forecast_delete_failure') . $this->forecast_model->error, 'error');
         }
 
-        Template::set('forecast', $this->forecast_model->find($id));
+        $forecast = $this->_client->request('GET', 'sales/forecasts', [
+            'query' => [
+                'X-API-KEY' => '1234',
+                'id' => $id
+            ]
+        ]);
+        $forecast = json_decode($forecast->getBody()->getContents(), true);
+        $client = $this->_client->request('GET', 'sales/partners', [
+            'query' => [
+                'X-API-KEY' => '1234',
+            ]
 
+        ]);
+        $partners = json_decode($client->getBody()->getContents(), true);
+
+        $client = $this->_client->request('GET', 'sales/models', [
+            'query' => [
+                'X-API-KEY' => '1234',
+            ]
+
+        ]);
+        $models = json_decode($client->getBody()->getContents(), true);
+
+        $client = $this->_client->request('GET', 'items/details', [
+            'query' => [
+                'X-API-KEY' => '1234',
+            ]
+        ]);
+        $items = json_decode($client->getBody()->getContents(), true);
+
+
+        Template::set('forecast', $forecast);
+        Template::set('partners', $partners);
+        Template::set('models', $models);
+        Template::set('items', $items);
         Template::set('toolbar_title', lang('forecast_edit_heading'));
         Template::render();
     }

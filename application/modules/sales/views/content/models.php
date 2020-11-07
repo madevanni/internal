@@ -46,17 +46,17 @@ if ($can_delete) {
             ?>
                     <tr>
                         <?php if ($can_delete) : ?>
-                            <td class='column-check'><input type='checkbox' name='checked[]' value='<?php echo $record->id; ?>' /></td>
+                            <td class='column-check'><input type='checkbox' name='checked[]' value='<?php echo $record['id']; ?>' /></td>
                         <?php endif; ?>
 
                         <?php if ($can_edit) : ?>
-                            <td><?php echo anchor(SITE_AREA . '/content/sales/edit_model/' . $record->id, '<span class="icon-pencil"></span> ' .  $record->desc); ?></td>
+                            <td><?php echo anchor(SITE_AREA . '/content/sales/edit_model/' . $record['id'], '<span class="icon-pencil"></span> ' .  $record['desc']); ?></td>
                         <?php else : ?>
-                            <td><?php e($record->desc); ?></td>
+                            <td><?php e($record['desc']); ?></td>
                         <?php endif; ?>
-                        <td><?php echo $record->deleted > 0 ? lang('models_true') : lang('models_false'); ?></td>
-                        <td><?php e($record->created_on); ?></td>
-                        <td><?php e($record->modified_on); ?></td>
+                        <td><?php echo $record['deleted'] > 0 ? lang('models_true') : lang('models_false'); ?></td>
+                        <td><?php e($record['created_on']); ?></td>
+                        <td><?php e($record['modified_on']); ?></td>
                     </tr>
                 <?php
                 endforeach;
